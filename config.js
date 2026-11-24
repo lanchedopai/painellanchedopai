@@ -8,6 +8,6 @@
  * NUNCA coloque aqui a "Secret key" / "service_role".
  * ===================================================================== */
 window.CONFIG_SUPABASE = {
-  url: 'https://COLOQUE-AQUI.supabase.co',
-  chave: 'COLOQUE-AQUI-A-PUBLISHABLE-KEY'
+  url: 'https://ukrbvdvaryvqgcqhjcat.supabase.co',
+  chave: 'sb_publishable_WMXHgG3z0r4jaAOHssxS3A_Wxl7oDWE'
 };
