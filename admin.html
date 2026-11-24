@@ -84,7 +84,9 @@
       body * { visibility: hidden; }
       #area-cupom-termico, #area-cupom-termico * {
         visibility: visible;
-        font-weight: bold !important;
+        font-weight: 900 !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
       }
       #area-cupom-termico {
         position: absolute;
@@ -240,7 +242,7 @@
         </nav>
       </div>
 
-      <div class="p-3 border-t border-purple-800/60 flex items-center justify-between gap-2 bg-[#25093c]">
+      <div class="p-3 border-t border-purple-800/60 flex items-center justify-between gap-2 bg-black/25">
         <button onclick="alternarSom()" id="btn-som" class="flex-1 bg-purple-900/80 hover:bg-purple-800 text-white py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
           <i id="icone-som" class="fa-solid fa-volume-high"></i> <span id="texto-som">Som Ativo</span>
         </button>
@@ -1387,6 +1389,45 @@
           </div>
         </div>
 
+        <!-- Este aparelho: som e impressora -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+          <div class="border-b pb-3">
+            <h2 class="text-lg font-extrabold text-[var(--cor)] flex items-center gap-2"><i class="fa-solid fa-mobile-screen"></i> Este aparelho: som e impressora</h2>
+            <p class="text-xs text-gray-500">Cada celular ou computador guarda a sua própria escolha.</p>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div><label class="block text-xs font-bold text-gray-700 mb-1">Som de pedido novo</label>
+              <select id="som-tipo" onchange="escolherSomCampainha(this.value)" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm bg-white"></select></div>
+            <div><label class="block text-xs font-bold text-gray-700 mb-1">Volume</label>
+              <input type="range" id="som-volume" min="0.1" max="1" step="0.1" oninput="mudarVolumeCampainha(this.value)" class="w-full accent-[var(--cor)] mt-3"></div>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" onclick="testarSomCampainha()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-4 py-2 rounded-xl text-xs cursor-pointer"><i class="fa-solid fa-play mr-1"></i> Ouvir</button>
+            <label class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-4 py-2 rounded-xl text-xs cursor-pointer"><i class="fa-solid fa-upload mr-1"></i> Usar meu próprio som (mp3)<input type="file" id="som-arquivo-input" accept="audio/*" class="hidden" onchange="enviarSomProprio(this)"></label>
+          </div>
+          <p class="text-[11px] text-gray-500">Com o painel fechado, o aviso usa o som de notificação do celular. Para mudar esse som: Configurações do celular → Apps → (painel) → Notificações.</p>
+          <div class="pt-3 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div><label class="block text-xs font-bold text-gray-700 mb-1">Largura do papel</label>
+              <select id="imp-papel" onchange="salvarConfigImpressora()" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm bg-white"><option value="58">58 mm (pequena)</option><option value="80">80 mm (grande)</option></select></div>
+            <div><label class="block text-xs font-bold text-gray-700 mb-1">Tamanho da letra</label>
+              <select id="imp-fonte" onchange="salvarConfigImpressora()" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm bg-white"><option value="1">Normal</option><option value="1.15">Grande</option><option value="1.3">Extra grande</option></select></div>
+            <label class="flex items-center gap-2 text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-xl p-2.5 cursor-pointer self-end"><input type="checkbox" id="imp-logo" onchange="salvarConfigImpressora()" class="accent-[var(--cor)] w-4 h-4"> Imprimir o logotipo</label>
+          </div>
+          <button type="button" onclick="imprimirTeste()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-4 py-2 rounded-xl text-xs cursor-pointer"><i class="fa-solid fa-print mr-1"></i> Imprimir teste</button>
+          <p class="text-[11px] text-gray-500">O navegador não informa o tamanho do papel: escolha aqui uma vez em cada aparelho. Na janela de impressão, deixe <b>Margens: Nenhuma</b> e <b>Escala: 100%</b>.</p>
+        </div>
+
+        <!-- Minha senha -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-3">
+          <h2 class="text-lg font-extrabold text-[var(--cor)] flex items-center gap-2"><i class="fa-solid fa-key"></i> Minha senha</h2>
+          <form id="form-senha" onsubmit="alterarMinhaSenha(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-3" autocomplete="off">
+            <input type="password" id="senha-atual" required autocomplete="current-password" placeholder="Senha atual" class="border border-gray-300 rounded-xl p-2.5 text-sm">
+            <input type="password" id="senha-nova" required minlength="8" autocomplete="new-password" placeholder="Nova senha (mín. 8)" class="border border-gray-300 rounded-xl p-2.5 text-sm">
+            <input type="password" id="senha-confirma" required minlength="8" autocomplete="new-password" placeholder="Repita a nova senha" class="border border-gray-300 rounded-xl p-2.5 text-sm">
+            <button type="submit" id="btn-alterar-senha" class="sm:col-span-3 bg-[var(--cor)] hover:bg-purple-900 text-white font-bold py-2.5 rounded-xl text-sm cursor-pointer">Trocar senha</button>
+          </form>
+        </div>
+
         <!-- Identidade da loja -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
           <div class="border-b pb-3">
@@ -1707,7 +1748,7 @@
           <input type="text" id="prod-ingredientes" placeholder="Ex: Cebola, Tomate, Alface, Maionese" class="w-full border border-gray-300 rounded-xl p-2.5 text-xs outline-purple-600">
           <p class="text-[10px] text-gray-400 mt-0.5">Separe por vírgula. Deixe vazio em bebidas e porções.</p>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div class="grid grid-cols-1 gap-2">
           <label class="flex items-center gap-2 text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-xl p-2.5 cursor-pointer"><input type="checkbox" id="prod-ponto" class="accent-[var(--cor)] w-4 h-4"> Perguntar o ponto da carne</label>
           <label class="flex items-center gap-2 text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-xl p-2.5 cursor-pointer"><input type="checkbox" id="prod-aceita-adicionais" class="accent-[var(--cor)] w-4 h-4"> Aceita adicionais</label>
         </div>
@@ -1715,8 +1756,8 @@
           <label class="flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer"><input type="checkbox" id="prod-troca-pao" onchange="alternarTrocaPao()" class="accent-[var(--cor)] w-4 h-4"> Cliente pode trocar o pão</label>
           <div id="box-pao-padrao" class="hidden"><label class="block text-[11px] font-bold text-gray-600 mb-1">Pão que vem normalmente</label><select id="prod-pao-padrao" class="w-full border border-gray-300 rounded-lg p-2 text-xs bg-white"></select></div>
         </div>
-        <div class="grid grid-cols-2 gap-2 items-end">
-          <label class="flex items-center gap-2 text-xs font-bold text-gray-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5 cursor-pointer"><input type="checkbox" id="prod-eh-combo" onchange="alternarCombo()" class="accent-[var(--cor)] w-4 h-4"> É um combo</label>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 items-end">
+          <label class="flex items-center gap-2 text-xs font-bold text-gray-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5 cursor-pointer whitespace-nowrap"><input type="checkbox" id="prod-eh-combo" onchange="alternarCombo()" class="accent-[var(--cor)] w-4 h-4"> É um combo</label>
           <div><label class="block text-[11px] font-bold text-gray-700 mb-1">Ordem no cardápio</label><input type="number" id="prod-ordem" value="0" class="w-full border border-gray-300 rounded-xl p-2 text-xs outline-purple-600"></div>
         </div>
         <div id="box-combo-grupos" class="hidden space-y-2">
@@ -1957,7 +1998,7 @@ function toast(msg, tipo) {
     ok: 'bg-emerald-600 text-white',
     erro: 'bg-rose-600 text-white',
     aviso: 'bg-amber-400 text-purple-950',
-    info: 'bg-[#2e0d49] text-white'
+    info: 'bg-[var(--cor-escura)] text-white'
   };
   var el = document.createElement('div');
   el.className = 'px-4 py-3 rounded-xl shadow-2xl text-xs font-bold flex items-start gap-2 ' + (cores[tipo || 'ok'] || cores.ok);
@@ -2688,6 +2729,7 @@ function aplicarMarcaPainel(c) {
   try { localStorage.setItem('loja_marca', JSON.stringify(m)); } catch (e) {}
   if (c.taxa_entrega !== undefined) window._taxaEntregaLoja = Number(c.taxa_entrega) || 0;
   aplicarCoresLoja(m.cor_primaria, m.cor_destaque);
+  if (typeof prepararLogoImpressao === 'function') prepararLogoImpressao(false);
   var nome = m.nome_loja || 'Painel da Loja';
   document.title = 'Painel · ' + nome;
   document.querySelectorAll('.nome-loja-texto').forEach(function (el) { el.textContent = nome; });
@@ -2997,7 +3039,7 @@ function renderizarGraficosDashboard(concluidos, validos) {
   if (chartPedidosInst) chartPedidosInst.destroy();
   chartPedidosInst = new Chart($('grafico-pedidos'), {
     type: 'bar',
-    data: { labels: labels.length ? labels : ['Sem dados'], datasets: [{ label: 'Pedidos', data: qtd.length ? qtd : [0], backgroundColor: '#7e22ce', borderRadius: 6 }] },
+    data: { labels: labels.length ? labels : ['Sem dados'], datasets: [{ label: 'Pedidos', data: qtd.length ? qtd : [0], backgroundColor: corDaLoja(0.85), borderRadius: 6 }] },
     options: Object.assign({}, opcoesBase, { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } })
   });
 
@@ -3022,7 +3064,7 @@ function renderizarGraficosDashboard(concluidos, validos) {
   if (chartHorariosInst) chartHorariosInst.destroy();
   chartHorariosInst = new Chart($('grafico-horarios'), {
     type: 'bar',
-    data: { labels: hs.length ? hs : ['--h'], datasets: [{ label: 'Pedidos Recebidos', data: hs.length ? hs.map(function (h) { return horas[h]; }) : [0], backgroundColor: '#a855f7', borderRadius: 4 }] },
+    data: { labels: hs.length ? hs : ['--h'], datasets: [{ label: 'Pedidos Recebidos', data: hs.length ? hs.map(function (h) { return horas[h]; }) : [0], backgroundColor: corDaLoja(0.6), borderRadius: 4 }] },
     options: Object.assign({}, opcoesBase, { scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } })
   });
 }
@@ -3347,13 +3389,7 @@ function imprimirPedido(id) {
     '<div style="border-top:1px dashed #000;padding-top:4px;margin-bottom:6px;">' + itens + (p.observacoes ? '<div style="margin-top:4px;font-weight:bold;font-size:9px;">OBS: ' + esc(p.observacoes) + '</div>' : '') + '</div>' +
     '<div style="border-top:1px dashed #000;padding-top:4px;font-size:10px;"><strong>Pagto:</strong> ' + esc(p.forma_pagamento || '-') + '<br><strong style="font-size:12px;">TOTAL: ' + esc(brl(p.total)) + '</strong></div>' +
     '<div style="text-align:center;margin-top:8px;font-size:9px;">*** Obrigado pela preferência! ***</div>';
-  var area = $('area-cupom-termico');
-  area.innerHTML = html;
-  area.classList.remove('hidden');
-  var esconder = function () { area.classList.add('hidden'); window.removeEventListener('afterprint', esconder); };
-  window.addEventListener('afterprint', esconder);
-  setTimeout(function () { window.print(); }, 50);
-  setTimeout(esconder, 60000); // segurança caso o navegador não dispare afterprint
+  enviarParaImpressora(html);
 }
 
 /* ---------------------------------------------------------------------
@@ -4137,6 +4173,7 @@ function atualizarTextoToggleStatus() {
 
 async function carregarConfiguracoesLoja() {
   atualizarCardNotificacoes();
+  if (typeof preencherCardAparelho === 'function') preencherCardAparelho();
   var sb = initClient();
   if (!sb) return;
   var res = await sb.from('configuracoes_loja').select('*').eq('id', 1).maybeSingle();
@@ -4238,16 +4275,6 @@ function imprimirComanda(id) {
     itens +
     (p.observacoes ? '<div style="margin-top:6px;font-size:12px;font-weight:900;border:1px solid #000;padding:3px;">OBS: ' + esc(p.observacoes) + '</div>' : '');
   enviarParaImpressora(html);
-}
-
-function enviarParaImpressora(html) {
-  var area = $('area-cupom-termico');
-  area.innerHTML = html;
-  area.classList.remove('hidden');
-  var esconder = function () { area.classList.add('hidden'); window.removeEventListener('afterprint', esconder); };
-  window.addEventListener('afterprint', esconder);
-  setTimeout(function () { window.print(); }, 50);
-  setTimeout(esconder, 60000);
 }
 
 /* o que imprimir quando um pedido é aceito / lançado no balcão (escolha por aparelho) */
@@ -4456,6 +4483,189 @@ async function enviarPedidoBalcao(e) {
     setBotaoCarregando(btn, false);
   }
 }
+
+  </script>
+  <script>
+/* ===== js/aparelho.js ===== */
+/* =====================================================================
+ * ESTE APARELHO: som da campainha e impressora (cada celular/computador
+ * guarda a sua escolha) + TROCA DE SENHA do usuário logado
+ * ===================================================================== */
+'use strict';
+
+var SONS_CAMPAINHA = [
+  { id: 'campainha', nome: 'Campainha (ding-dong)', arquivo: 'campainha.wav' },
+  { id: 'sino', nome: 'Sino de balcão', arquivo: 'som-sino.wav' },
+  { id: 'alerta', nome: 'Alerta rápido (3 bipes)', arquivo: 'som-alerta.wav' },
+  { id: 'buzina', nome: 'Buzina forte', arquivo: 'som-buzina.wav' },
+  { id: 'melodia', nome: 'Melodia (3 notas)', arquivo: 'som-melodia.wav' },
+  { id: 'arquivo', nome: 'Meu próprio som (arquivo)', arquivo: '' }
+];
+
+function lerAparelho(chave, padrao) { try { var v = localStorage.getItem('loja_' + chave); return v === null ? padrao : v; } catch (e) { return padrao; } }
+function gravarAparelho(chave, valor) { try { localStorage.setItem('loja_' + chave, valor); return true; } catch (e) { return false; } }
+
+/* ---------------------------------------------------------------- som */
+function aplicarSomEscolhido() {
+  var id = lerAparelho('som_tipo', 'campainha');
+  var s = SONS_CAMPAINHA.find(function (x) { return x.id === id; }) || SONS_CAMPAINHA[0];
+  var src = s.arquivo;
+  if (s.id === 'arquivo') src = lerAparelho('som_arquivo', '') || 'campainha.wav';
+  if (somAlertaPedido.getAttribute('src') !== src) { somAlertaPedido.src = src; somAlertaPedido.load(); }
+  somAlertaPedido.volume = Math.max(0.1, Math.min(1, Number(lerAparelho('som_volume', '1')) || 1));
+}
+function escolherSomCampainha(id) {
+  if (id === 'arquivo' && !lerAparelho('som_arquivo', '')) { $('som-arquivo-input').click(); return; }
+  gravarAparelho('som_tipo', id);
+  aplicarSomEscolhido();
+  testarSomCampainha();
+}
+function mudarVolumeCampainha(v) { gravarAparelho('som_volume', v); aplicarSomEscolhido(); }
+function testarSomCampainha() {
+  aplicarSomEscolhido();
+  try { somAlertaPedido.currentTime = 0; var p = somAlertaPedido.play(); if (p && p.catch) p.catch(function () { bipeReserva(); }); } catch (e) { bipeReserva(); }
+}
+function enviarSomProprio(input) {
+  var arq = input.files && input.files[0];
+  input.value = '';
+  if (!arq) return;
+  if (arq.size > 1024 * 1024) { toast('O arquivo de som precisa ter até 1 MB (um toque curto de poucos segundos).', 'aviso'); return; }
+  var leitor = new FileReader();
+  leitor.onload = function () {
+    if (!gravarAparelho('som_arquivo', leitor.result)) { toast('Não coube na memória do aparelho. Use um arquivo menor.', 'aviso'); return; }
+    gravarAparelho('som_tipo', 'arquivo');
+    preencherCardAparelho();
+    testarSomCampainha();
+    toast('✓ Som próprio salvo neste aparelho.', 'ok');
+  };
+  leitor.readAsDataURL(arq);
+}
+
+/* ---------------------------------------------------------------- impressora */
+function configImpressora() {
+  return {
+    papel: lerAparelho('imp_papel', '58'),          // 58 ou 80 mm
+    fonte: Number(lerAparelho('imp_fonte', '1.15')), // tamanho da letra
+    logo: lerAparelho('imp_logo', '1') === '1'
+  };
+}
+function salvarConfigImpressora() {
+  gravarAparelho('imp_papel', $('imp-papel').value);
+  gravarAparelho('imp_fonte', $('imp-fonte').value);
+  gravarAparelho('imp_logo', $('imp-logo').checked ? '1' : '0');
+  if ($('imp-logo').checked) prepararLogoImpressao(true);
+  toast('Impressora deste aparelho: papel ' + $('imp-papel').value + ' mm.', 'info');
+}
+
+/* logo em preto e branco para impressora térmica (logo de fundo escuro é invertido) */
+var _logoImpressao = null;
+function prepararLogoImpressao(forcar) {
+  var url = '';
+  try { url = (JSON.parse(localStorage.getItem('loja_marca') || '{}').logo_url) || ''; } catch (e) {}
+  if (!url) { _logoImpressao = null; return Promise.resolve(null); }
+  try {
+    var guardado = JSON.parse(localStorage.getItem('loja_logo_impressao') || 'null');
+    if (!forcar && guardado && guardado.url === url) { _logoImpressao = guardado.dados; return Promise.resolve(_logoImpressao); }
+  } catch (e) {}
+  return new Promise(function (ok) {
+    var img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function () {
+      try {
+        var t = 240, cv = document.createElement('canvas'); cv.width = cv.height = t;
+        var g = cv.getContext('2d');
+        g.fillStyle = '#fff'; g.fillRect(0, 0, t, t);
+        var e = Math.min(t / img.width, t / img.height);
+        g.drawImage(img, (t - img.width * e) / 2, (t - img.height * e) / 2, img.width * e, img.height * e);
+        var d = g.getImageData(0, 0, t, t), px = d.data;
+        var canto = 0; [[2, 2], [t - 3, 2], [2, t - 3], [t - 3, t - 3]].forEach(function (c) { var i = (c[1] * t + c[0]) * 4; canto += (px[i] + px[i + 1] + px[i + 2]) / 3; });
+        var inverter = canto / 4 < 110; // fundo escuro: imprime o desenho em preto sobre papel branco
+        for (var i = 0; i < px.length; i += 4) {
+          var l = 0.3 * px[i] + 0.59 * px[i + 1] + 0.11 * px[i + 2];
+          if (inverter) l = 255 - l;
+          l = l > 170 ? 255 : l < 90 ? 0 : (l - 90) * 255 / 80;
+          px[i] = px[i + 1] = px[i + 2] = l; px[i + 3] = 255;
+        }
+        g.putImageData(d, 0, 0);
+        _logoImpressao = cv.toDataURL('image/png');
+        try { localStorage.setItem('loja_logo_impressao', JSON.stringify({ url: url, dados: _logoImpressao })); } catch (e2) {}
+      } catch (e3) { _logoImpressao = null; }
+      ok(_logoImpressao);
+    };
+    img.onerror = function () { _logoImpressao = null; ok(null); };
+    img.src = url + (url.indexOf('?') === -1 ? '?' : '&') + 'impressao=1';
+  });
+}
+
+/* envia para a impressora ocupando toda a largura do papel escolhido */
+function enviarParaImpressora(html) {
+  var cfg = configImpressora();
+  var util = cfg.papel === '80' ? 72 : 48;              // área imprimível em mm
+  var zoom = (util / 48) * (cfg.fonte || 1);
+  var area = $('area-cupom-termico');
+  var topo = cfg.logo && _logoImpressao ? '<div style="text-align:center;margin-bottom:4px;"><img src="' + _logoImpressao + '" style="display:block;width:55%;margin:0 auto;"></div>' : '';
+  area.innerHTML = topo + html;
+  area.style.width = (util / zoom).toFixed(2) + 'mm';
+  area.style.zoom = zoom;
+  var estilo = $('estilo-pagina-impressao');
+  if (!estilo) { estilo = document.createElement('style'); estilo.id = 'estilo-pagina-impressao'; document.head.appendChild(estilo); }
+  estilo.textContent = '@media print { @page { size: ' + cfg.papel + 'mm auto; margin: 0; } }';
+  area.classList.remove('hidden');
+  var esconder = function () { area.classList.add('hidden'); window.removeEventListener('afterprint', esconder); };
+  window.addEventListener('afterprint', esconder);
+  setTimeout(function () { window.print(); }, topo ? 250 : 50);
+  setTimeout(esconder, 60000);
+}
+
+function imprimirTeste() {
+  enviarParaImpressora('<div style="text-align:center;font-size:12px;">TESTE DE IMPRESSÃO</div>' +
+    '<div style="border-top:1px dashed #000;margin:4px 0;"></div><div style="font-size:15px;font-weight:900;">2x X-Burguer</div>' +
+    '<div style="padding-left:6px;font-size:13px;font-weight:900;">SEM CEBOLA</div><div style="font-size:11px;">Papel ' + configImpressora().papel + ' mm — se o texto saiu cortado ou pequeno, ajuste o papel e o tamanho da letra.</div>');
+}
+
+/* ---------------------------------------------------------------- tela */
+function preencherCardAparelho() {
+  if (!$('som-tipo')) return;
+  var id = lerAparelho('som_tipo', 'campainha');
+  $('som-tipo').innerHTML = SONS_CAMPAINHA.map(function (s) {
+    return '<option value="' + s.id + '"' + (s.id === id ? ' selected' : '') + '>' + esc(s.nome) + (s.id === 'arquivo' && lerAparelho('som_arquivo', '') ? ' ✓' : '') + '</option>';
+  }).join('');
+  $('som-volume').value = lerAparelho('som_volume', '1');
+  var c = configImpressora();
+  $('imp-papel').value = c.papel;
+  $('imp-fonte').value = String(c.fonte);
+  $('imp-logo').checked = c.logo;
+}
+
+/* ---------------------------------------------------------------- senha */
+async function alterarMinhaSenha(e) {
+  e.preventDefault();
+  var atual = $('senha-atual').value, nova = $('senha-nova').value, conf = $('senha-confirma').value;
+  if (nova.length < 8) { toast('A nova senha precisa ter pelo menos 8 caracteres.', 'aviso'); return; }
+  if (nova !== conf) { toast('A confirmação não é igual à nova senha.', 'aviso'); return; }
+  if (nova === atual) { toast('A nova senha precisa ser diferente da atual.', 'aviso'); return; }
+  var btn = $('btn-alterar-senha'), sb = initClient();
+  setBotaoCarregando(btn, true);
+  try {
+    var email = usuarioAtual && usuarioAtual.email;
+    var conferir = await sb.auth.signInWithPassword({ email: email, password: atual });
+    if (conferir.error) { toast('Senha atual incorreta.', 'erro'); return; }
+    var r = await sb.auth.updateUser({ password: nova });
+    if (r.error) {
+      var m = r.error.message || '';
+      toast(/weak|short|characters/i.test(m) ? 'Senha fraca: use letras, números e pelo menos 8 caracteres.' : 'Não foi possível trocar a senha: ' + m, 'erro');
+      return;
+    }
+    $('form-senha').reset();
+    toast('✓ Senha alterada. Use a nova senha no próximo login.', 'ok');
+  } catch (err) { mostrarErro('Não foi possível trocar a senha', err); }
+  finally { setBotaoCarregando(btn, false); }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  aplicarSomEscolhido();
+  prepararLogoImpressao(false);
+});
 
   </script>
   <script>

@@ -16,7 +16,7 @@ const ARQUIVOS_APP = [
   './admin-icone-192.png', './admin-icone-512.png'
 ];
 // Arquivos opcionais (se não existirem no servidor, a instalação continua)
-const ARQUIVOS_OPCIONAIS = ['./campainha.wav', './config.js'];
+const ARQUIVOS_OPCIONAIS = ['./campainha.wav', './som-sino.wav', './som-alerta.wav', './som-buzina.wav', './som-melodia.wav', './config.js'];
 
 const CDNS = ['cdn.tailwindcss.com', 'cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'db.onlinewebfonts.com'];
 
