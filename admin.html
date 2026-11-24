@@ -1411,10 +1411,45 @@
               <select id="imp-papel" onchange="salvarConfigImpressora()" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm bg-white"><option value="58">58 mm (pequena)</option><option value="80">80 mm (grande)</option></select></div>
             <div><label class="block text-xs font-bold text-gray-700 mb-1">Tamanho da letra</label>
               <select id="imp-fonte" onchange="salvarConfigImpressora()" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm bg-white"><option value="1">Normal</option><option value="1.15">Grande</option><option value="1.3">Extra grande</option></select></div>
+            <label class="sm:col-span-3 flex items-center gap-2 text-xs font-bold text-gray-700 bg-amber-50 border border-amber-200 rounded-xl p-2.5 cursor-pointer order-last"><input type="checkbox" id="imp-auto-garcom" onchange="salvarConfigImpressora()" class="accent-[var(--cor)] w-4 h-4"> Imprimir sozinho a comanda dos pedidos lançados pelo garçom (deixe ligado só no aparelho da cozinha)</label>
             <label class="flex items-center gap-2 text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-xl p-2.5 cursor-pointer self-end"><input type="checkbox" id="imp-logo" onchange="salvarConfigImpressora()" class="accent-[var(--cor)] w-4 h-4"> Imprimir o logotipo</label>
           </div>
           <button type="button" onclick="imprimirTeste()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-4 py-2 rounded-xl text-xs cursor-pointer"><i class="fa-solid fa-print mr-1"></i> Imprimir teste</button>
           <p class="text-[11px] text-gray-500">O navegador não informa o tamanho do papel: escolha aqui uma vez em cada aparelho. Na janela de impressão, deixe <b>Margens: Nenhuma</b> e <b>Escala: 100%</b>.</p>
+        </div>
+
+        <!-- Mesas e garçons -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-4">
+          <div class="flex items-start justify-between gap-3 border-b pb-3">
+            <div>
+              <h2 class="text-lg font-extrabold text-[var(--cor)] flex items-center gap-2"><i class="fa-solid fa-utensils"></i> Mesas e garçons</h2>
+              <p class="text-xs text-gray-500">App do garçom, QR Code nas mesas e taxa de serviço.</p>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0" title="Ligar / desligar"><input type="checkbox" id="mesas-ativo" onchange="atualizarCardMesas()" class="sr-only peer"><div class="w-11 h-6 bg-gray-300 rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div></label>
+          </div>
+          <form id="box-mesas" onsubmit="salvarConfigMesas(event)" class="space-y-3 transition">
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              <div><label class="block text-xs font-bold text-gray-700 mb-1">Quantidade de mesas</label><input type="number" id="mesas-qtd" min="1" max="200" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm"></div>
+              <label class="flex items-center gap-2 text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-xl p-2.5 cursor-pointer self-end"><input type="checkbox" id="mesas-qr" class="accent-[var(--cor)] w-4 h-4"> Pedido pelo QR Code na mesa</label>
+              <div class="col-span-2 sm:col-span-1 flex items-end gap-2"><label class="flex items-center gap-2 text-xs font-bold text-gray-700 bg-gray-50 border border-gray-200 rounded-xl p-2.5 cursor-pointer flex-1"><input type="checkbox" id="mesas-taxa" onchange="atualizarCardMesas()" class="accent-[var(--cor)] w-4 h-4"> Taxa de serviço</label><input type="number" id="mesas-taxa-pct" min="0" max="30" step="0.5" class="w-16 border border-gray-300 rounded-xl p-2.5 text-sm text-center" title="%"><span class="text-xs font-bold pb-3">%</span></div>
+            </div>
+            <div><label class="block text-xs font-bold text-gray-700 mb-1">Endereço do site de pedidos (vai dentro do QR Code)</label><input type="text" id="mesas-url-site" placeholder="https://pedidoslanchedopai.manhub.com.br/" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm"></div>
+            <div class="flex flex-wrap gap-2">
+              <button type="submit" id="btn-salvar-mesas" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-sm cursor-pointer"><i class="fa-solid fa-floppy-disk mr-1"></i> Salvar mesas</button>
+              <button type="button" onclick="imprimirQrMesas()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-4 py-2.5 rounded-xl text-xs cursor-pointer"><i class="fa-solid fa-qrcode mr-1"></i> Imprimir QR Codes das mesas</button>
+            </div>
+            <p class="text-[11px] text-gray-500">App do garçom (abra no celular e instale): <a id="link-app-garcom" target="_blank" class="text-[var(--cor)] font-bold underline break-all"></a></p>
+          </form>
+          <div class="pt-3 border-t border-gray-100">
+            <p class="text-xs font-extrabold text-gray-800 mb-1">Garçons</p>
+            <div id="lista-equipe"></div>
+            <form id="form-garcom" onsubmit="adicionarGarcom(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
+              <input type="text" id="garcom-nome" maxlength="40" placeholder="Nome (ex.: Zé)" class="border border-gray-300 rounded-xl p-2.5 text-sm">
+              <input type="email" id="garcom-email" required placeholder="E-mail do garçom" class="border border-gray-300 rounded-xl p-2.5 text-sm">
+              <button type="submit" class="bg-[var(--cor)] hover:bg-purple-900 text-white font-bold py-2.5 rounded-xl text-sm cursor-pointer"><i class="fa-solid fa-user-plus mr-1"></i> Adicionar garçom</button>
+            </form>
+            <p class="text-[11px] text-gray-500 mt-2">Antes, crie o usuário do garçom no Supabase: Authentication → Users → Add user (e-mail + senha, marque Auto Confirm).</p>
+          </div>
         </div>
 
         <!-- Minha senha -->
@@ -3221,7 +3256,13 @@ function detectarPedidosNovos() {
       if (abaAtual !== 'pedidos') toast('Novo pedido #' + p.id + ' — ' + (p.cliente_nome || 'Cliente'), 'info');
     }
   });
-  listaGlobalPedidos.forEach(function (p) { _idsPedidosConhecidos.add(p.id); });
+  listaGlobalPedidos.forEach(function (p) {
+    if (!_idsPedidosConhecidos.has(p.id) && p.origem === 'garcom' && p.status === 'Em preparo') {
+      if (typeof imprimirPedidoDoGarcomSeLigado === 'function') imprimirPedidoDoGarcomSeLigado(p);
+      if (abaAtual !== 'pedidos') toast('Mesa ' + (p.mesa || '') + ': novo pedido do garçom (#' + p.id + ')', 'info');
+    }
+    _idsPedidosConhecidos.add(p.id);
+  });
 }
 
 function filtrarStatus(s) {
@@ -4174,6 +4215,7 @@ function atualizarTextoToggleStatus() {
 async function carregarConfiguracoesLoja() {
   atualizarCardNotificacoes();
   if (typeof preencherCardAparelho === 'function') preencherCardAparelho();
+  if (typeof carregarCardMesas === 'function') carregarCardMesas().catch(function (e) { console.warn(e); });
   var sb = initClient();
   if (!sb) return;
   var res = await sb.from('configuracoes_loja').select('*').eq('id', 1).maybeSingle();
@@ -4553,6 +4595,7 @@ function salvarConfigImpressora() {
   gravarAparelho('imp_papel', $('imp-papel').value);
   gravarAparelho('imp_fonte', $('imp-fonte').value);
   gravarAparelho('imp_logo', $('imp-logo').checked ? '1' : '0');
+  if ($('imp-auto-garcom')) gravarAparelho('imp_auto_garcom', $('imp-auto-garcom').checked ? '1' : '0');
   if ($('imp-logo').checked) prepararLogoImpressao(true);
   toast('Impressora deste aparelho: papel ' + $('imp-papel').value + ' mm.', 'info');
 }
@@ -4635,6 +4678,7 @@ function preencherCardAparelho() {
   $('imp-papel').value = c.papel;
   $('imp-fonte').value = String(c.fonte);
   $('imp-logo').checked = c.logo;
+  if ($('imp-auto-garcom')) $('imp-auto-garcom').checked = lerAparelho('imp_auto_garcom', '0') === '1';
 }
 
 /* ---------------------------------------------------------------- senha */
@@ -4666,6 +4710,152 @@ document.addEventListener('DOMContentLoaded', function () {
   aplicarSomEscolhido();
   prepararLogoImpressao(false);
 });
+
+  </script>
+  <script>
+/* ===== js/mesas.js ===== */
+/* =====================================================================
+ * MESAS E GARÇONS (painel): ligar/desligar, quantidade de mesas, taxa
+ * de serviço, QR Code das mesas e equipe de garçons
+ * ===================================================================== */
+'use strict';
+
+var _mesasCfg = {};
+var _listaEquipe = [];
+
+async function carregarCardMesas() {
+  if (!$('mesas-ativo')) return;
+  var sb = initClient();
+  var r = await Promise.all([
+    sb.from('configuracoes_loja').select('mesas_ativo, qtd_mesas, qrcode_mesa_ativo, taxa_servico_ativa, taxa_servico_pct, url_site').eq('id', 1).maybeSingle(),
+    sb.from('equipe').select('*').order('nome')
+  ]);
+  if (r[0].error) { $('box-mesas').innerHTML = '<p class="text-xs text-rose-600">Rode o instalar.sql novo no Supabase para usar as mesas.</p>'; return; }
+  _mesasCfg = r[0].data || {};
+  _listaEquipe = (r[1] && r[1].data) || [];
+  $('mesas-ativo').checked = !!_mesasCfg.mesas_ativo;
+  $('mesas-qtd').value = _mesasCfg.qtd_mesas || 10;
+  $('mesas-qr').checked = _mesasCfg.qrcode_mesa_ativo !== false;
+  $('mesas-taxa').checked = !!_mesasCfg.taxa_servico_ativa;
+  $('mesas-taxa-pct').value = _mesasCfg.taxa_servico_pct || 10;
+  $('mesas-url-site').value = _mesasCfg.url_site || '';
+  $('link-app-garcom').href = 'garcom.html';
+  $('link-app-garcom').textContent = location.href.replace(/[^/]*([?#].*)?$/, '') + 'garcom.html';
+  atualizarCardMesas();
+  renderizarEquipe();
+}
+
+function atualizarCardMesas() {
+  $('box-mesas').classList.toggle('opacity-50', !$('mesas-ativo').checked);
+  $('mesas-taxa-pct').disabled = !$('mesas-taxa').checked;
+}
+
+async function salvarConfigMesas(e) {
+  e.preventDefault();
+  var qtd = parseInt($('mesas-qtd').value, 10);
+  if (!(qtd >= 1 && qtd <= 200)) { toast('Informe de 1 a 200 mesas.', 'aviso'); return; }
+  var url = $('mesas-url-site').value.trim();
+  if (url && !/^https:\/\/.+/i.test(url)) { toast('O endereço do site deve começar com https://', 'aviso'); return; }
+  if (url && !/\/$/.test(url) && !/\.html$/i.test(url)) url += '/';
+  var btn = $('btn-salvar-mesas'), sb = initClient();
+  setBotaoCarregando(btn, true);
+  try {
+    var r = await sb.from('configuracoes_loja').update({
+      mesas_ativo: $('mesas-ativo').checked, qrcode_mesa_ativo: $('mesas-qr').checked,
+      taxa_servico_ativa: $('mesas-taxa').checked, taxa_servico_pct: arred(Math.max(0, Math.min(30, parseFloat($('mesas-taxa-pct').value) || 10))),
+      url_site: url || null
+    }).eq('id', 1);
+    if (r.error) { mostrarErro('Erro ao salvar as mesas', r.error); return; }
+    var a = await sb.rpc('mesas_ajustar', { p_qtd: qtd });
+    if (a.error) { mostrarErro('Erro ao ajustar as mesas', a.error); return; }
+    toast($('mesas-ativo').checked ? '✓ Mesas ativas: ' + qtd + ' mesas.' : 'App de mesas e QR desligados.', 'ok');
+    carregarCardMesas();
+  } finally { setBotaoCarregando(btn, false); }
+}
+
+function renderizarEquipe() {
+  var ativos = _listaEquipe.filter(function (g) { return g.ativo !== false; });
+  $('lista-equipe').innerHTML = ativos.length ? ativos.map(function (g) {
+    return '<div class="flex items-center justify-between py-2 border-b border-gray-100"><div><p class="text-sm font-bold">' + esc(g.nome) + '</p><p class="text-[11px] text-gray-500">' + esc(g.email || '') + '</p></div>' +
+      '<button onclick="removerGarcom(\'' + esc(g.user_id) + '\')" class="text-xs text-gray-400 hover:text-rose-600 font-bold px-2 py-1 cursor-pointer"><i class="fa-solid fa-user-minus"></i> Remover</button></div>';
+  }).join('') : '<p class="text-xs text-gray-400 py-2">Nenhum garçom cadastrado. O dono também pode usar o app das mesas com o próprio login.</p>';
+}
+
+async function adicionarGarcom(e) {
+  e.preventDefault();
+  var email = $('garcom-email').value.trim(), nome = $('garcom-nome').value.trim();
+  var r = await initClient().rpc('equipe_adicionar', { p_email: email, p_nome: nome });
+  if (r.error) {
+    var m = r.error.message || '';
+    toast(/USUARIO_NAO_ENCONTRADO/.test(m) ? 'Esse e-mail ainda não tem usuário. No Supabase: Authentication → Users → Add user → Create new user (marque Auto Confirm). Depois adicione aqui.'
+      : /JA_E_ADMIN/.test(m) ? 'Esse e-mail já é administrador: ele já pode usar o app das mesas.' : 'Erro: ' + m, 'aviso');
+    return;
+  }
+  $('form-garcom').reset();
+  toast('✓ ' + (nome || email) + ' já pode entrar no app das mesas.', 'ok');
+  carregarCardMesas();
+}
+
+async function removerGarcom(id) {
+  var g = _listaEquipe.find(function (x) { return x.user_id === id; });
+  if (!g || !confirm('Remover ' + g.nome + ' da equipe? Ele não vai mais conseguir entrar no app das mesas.')) return;
+  var r = await initClient().from('equipe').update({ ativo: false }).eq('user_id', id);
+  if (r.error) { mostrarErro('Erro ao remover', r.error); return; }
+  toast(g.nome + ' removido da equipe.', 'info');
+  carregarCardMesas();
+}
+
+/* ---- QR Codes para imprimir e colar nas mesas ---- */
+function carregarLibQr() {
+  return new Promise(function (ok) {
+    if (window.qrcode) return ok(true);
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+    s.onload = function () { ok(true); }; s.onerror = function () { ok(false); };
+    document.head.appendChild(s);
+  });
+}
+async function imprimirQrMesas() {
+  var url = ($('mesas-url-site').value || '').trim();
+  if (!url) { toast('Preencha o "Endereço do site de pedidos" e salve antes de gerar os QR Codes.', 'aviso'); $('mesas-url-site').focus(); return; }
+  if (!/\/$/.test(url) && !/\.html$/i.test(url)) url += '/';
+  var janela = window.open('', '_blank');
+  if (!janela) { toast('O navegador bloqueou a janela. Permita pop-ups para este site.', 'aviso'); return; }
+  janela.document.write('<p style="font-family:sans-serif">Gerando QR Codes...</p>');
+  var r = await initClient().from('mesas').select('numero, codigo').eq('ativa', true).order('numero');
+  if (r.error || !(r.data || []).length) { janela.close(); mostrarErro('Não foi possível ler as mesas', r.error || 'nenhuma mesa'); return; }
+  if (!(await carregarLibQr())) { janela.close(); toast('Sem internet para gerar os QR Codes.', 'erro'); return; }
+  var marca = {}; try { marca = JSON.parse(localStorage.getItem('loja_marca') || '{}'); } catch (e2) {}
+  var cor = getComputedStyle(document.documentElement).getPropertyValue('--cor').trim() || '#000';
+  var cartoes = r.data.map(function (m) {
+    var qr = window.qrcode(0, 'M'); qr.addData(url + '?mesa=' + m.numero + '&c=' + encodeURIComponent(m.codigo)); qr.make();
+    return '<div class="c"><div class="t" style="background:' + cor + '">' + (marca.logo_url ? '<img src="' + esc(marca.logo_url) + '" class="l">' : '') + '<span>' + esc(marca.nome_loja || '') + '</span></div>' +
+      '<div class="m">MESA ' + m.numero + '</div><img class="q" src="' + qr.createDataURL(8, 2) + '"><div class="i">Aponte a câmera do celular<br>para ver o cardápio e pedir</div></div>';
+  }).join('');
+  janela.document.open();
+  janela.document.write('<!DOCTYPE html><html><head><meta charset="utf-8"><title>QR Codes das mesas</title><style>' +
+    '@page{size:A4;margin:10mm}body{font-family:Arial,sans-serif;margin:0}.g{display:grid;grid-template-columns:1fr 1fr;gap:8mm}' +
+    '.c{border:1.5px dashed #999;border-radius:6mm;text-align:center;padding:0 0 6mm;break-inside:avoid;overflow:hidden;height:86mm}' +
+    '.t{color:#fff;display:flex;align-items:center;justify-content:center;gap:3mm;padding:3mm;font-weight:900;font-size:5mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+    '.l{height:10mm;width:10mm;object-fit:contain}.m{font-size:9mm;font-weight:900;margin-top:2mm}.q{width:46mm;height:46mm;image-rendering:pixelated}.i{font-size:3.6mm;color:#333}' +
+    '.b{position:fixed;top:8px;right:8px;padding:10px 16px;font-size:15px;font-weight:bold;cursor:pointer}@media print{.b{display:none}}' +
+    '</style></head><body><button class="b" onclick="print()">Imprimir</button><div class="g">' + cartoes + '</div></body></html>');
+  janela.document.close();
+}
+
+/* ---- impressão automática dos pedidos do garçom neste aparelho ---- */
+var _filaImpressaoMesa = [];
+function imprimirPedidoDoGarcomSeLigado(p) {
+  if (lerAparelho('imp_auto_garcom', '0') !== '1') return;
+  _filaImpressaoMesa.push(p.id);
+  if (_filaImpressaoMesa.length === 1) proximaImpressaoMesa();
+}
+function proximaImpressaoMesa() {
+  var id = _filaImpressaoMesa[0];
+  if (id === undefined) return;
+  imprimirComanda(id);
+  setTimeout(function () { _filaImpressaoMesa.shift(); proximaImpressaoMesa(); }, 2500);
+}
 
   </script>
   <script>
