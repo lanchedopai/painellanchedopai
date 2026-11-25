@@ -175,6 +175,11 @@
     .aba-canal .contagem { padding: 0 7px; border-radius: 999px; font-size: 11px; font-variant-numeric: tabular-nums; background: #E8EBF0; color: #475569; }
     .aba-canal.sel { color: #0F172A; border-bottom-color: var(--grafite); }
     .aba-canal.sel .contagem { background: var(--grafite); color: #fff; }
+    @keyframes piscaVermelho { 0%, 100% { background: transparent; } 50% { background: rgba(220, 38, 38, .16); } }
+    @keyframes piscaMenu { 0%, 100% { background: transparent; } 50% { background: rgba(220, 38, 38, .38); } }
+    .aba-canal.pisca { color: #B91C1C !important; border-radius: 6px 6px 0 0; animation: piscaVermelho 1s ease-in-out infinite; }
+    .aba-canal.pisca .contagem { background: #DC2626 !important; color: #fff !important; }
+    .nav-item.pisca { animation: piscaMenu 1s ease-in-out infinite; color: #fff; }
     .btn-filtro.sel .contagem { background: rgba(197, 160, 89, .25); color: var(--champ); border-color: transparent; }
   </style>
   <link rel="manifest" href="manifest-admin.json">
@@ -459,7 +464,7 @@
         <div id="barra-filtros" class="flex flex-wrap items-center gap-1.5 bg-white p-2 rounded-lg border border-[#E2E5EC]">
           <button onclick="filtrarStatus('Todos')" class="btn-filtro sel" data-status="Todos"><span>Todos (hoje)</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Aguardando Aceite da Loja')" class="btn-filtro" data-status="Aguardando Aceite da Loja"><span>Novos (aguardando aceite)</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Aguardando Pagamento Pix')" class="btn-filtro" data-status="Aguardando Pagamento Pix"><span>Aguardando Pix</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Em preparo')" class="btn-filtro" data-status="Em preparo"><span>Em preparação</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Saiu para entrega')" class="btn-filtro" data-status="Saiu para entrega"><span>Prontos / a caminho</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Concluído')" class="btn-filtro" data-status="Concluído"><span>Concluídos</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Recusado')" class="btn-filtro" data-status="Recusado"><span>Recusados</span><span class="contagem">0</span></button>
         </div>
-        <div id="lista-pedidos-admin" class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
+        <div id="lista-pedidos-admin" class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">
           <div class="col-span-full text-center py-12 text-slate-400 text-sm">Carregando os pedidos de hoje...</div>
         </div>
       </section>
@@ -1430,6 +1435,10 @@
               <select id="som-tipo" onchange="escolherSomCampainha(this.value)" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm bg-white"></select></div>
             <div><label class="block text-xs font-bold text-gray-700 mb-1">Volume</label>
               <input type="range" id="som-volume" min="0.1" max="1" step="0.1" oninput="mudarVolumeCampainha(this.value)" class="w-full accent-[var(--cor)] mt-3"></div>
+            <div class="sm:col-span-2"><label class="block text-xs font-bold text-gray-700 mb-1">Som de pedido da mesa (lançado pelo garçom)</label>
+              <div class="flex gap-2"><select id="som-mesa" onchange="escolherSomMesa(this.value)" class="flex-1 border border-gray-300 rounded-xl p-2.5 text-sm bg-white"></select>
+              <button type="button" onclick="tocarSomMesa(true)" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-4 py-2 rounded-xl text-xs cursor-pointer"><i class="fa-solid fa-play mr-1"></i> Ouvir</button></div>
+              <p class="text-[11px] text-gray-500 mt-1">Toca quando o garçom lança um pedido. A aba "Mesas" fica piscando em vermelho até alguém abrir.</p></div>
           </div>
           <div class="flex flex-wrap gap-2">
             <button type="button" onclick="testarSomCampainha()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold px-4 py-2 rounded-xl text-xs cursor-pointer"><i class="fa-solid fa-play mr-1"></i> Ouvir</button>
@@ -3320,7 +3329,9 @@ function detectarPedidosNovos() {
     }
   });
   listaGlobalPedidos.forEach(function (p) {
+    if (!_idsPedidosConhecidos.has(p.id) && p.tipo_recebimento === 'Mesa') marcarNovidadeMesa();
     if (!_idsPedidosConhecidos.has(p.id) && p.origem === 'garcom' && p.status === 'Em preparo') {
+      if (typeof tocarSomMesa === 'function') tocarSomMesa();
       if (typeof imprimirPedidoDoGarcomSeLigado === 'function') imprimirPedidoDoGarcomSeLigado(p);
       if (abaAtual !== 'pedidos') toast('Mesa ' + (p.mesa || '') + ': novo pedido do garçom (#' + p.id + ')', 'info');
     }
@@ -3329,8 +3340,30 @@ function detectarPedidosNovos() {
 }
 
 window.canalPedidos = (function () { try { return localStorage.getItem('loja_canal_pedidos') || 'todos'; } catch (e) { return 'todos'; } })();
+/* aba "Mesas" piscando até alguém abrir */
+window._novidadeMesa = false;
+function vendoMesas() { return abaAtual === 'pedidos' && window.canalPedidos === 'mesa' && !document.hidden; }
+function marcarNovidadeMesa() {
+  if (vendoMesas()) return;
+  window._novidadeMesa = true;
+  atualizarPiscaMesa();
+}
+function atualizarPiscaMesa() {
+  if (window._novidadeMesa && vendoMesas()) window._novidadeMesa = false;
+  var aba = document.querySelector('.aba-canal[data-canal="mesa"]'), menu = $('nav-btn-pedidos');
+  if (aba) aba.classList.toggle('pisca', window._novidadeMesa);
+  if (menu) menu.classList.toggle('pisca', window._novidadeMesa);
+}
+document.addEventListener('visibilitychange', function () { if (!document.hidden) atualizarPiscaMesa(); });
+async function mesaTudoPronto(ids) {
+  ids = String(ids).split(',').map(Number).filter(Boolean);
+  for (var i = 0; i < ids.length; i++) await executarMudancaStatus(ids[i], 'Saiu para entrega');
+  renderizarPedidos();
+}
+
 function filtrarCanal(c) {
   window.canalPedidos = c;
+  if (c === 'mesa') window._novidadeMesa = false;
   try { localStorage.setItem('loja_canal_pedidos', c); } catch (e) {}
   renderizarPedidos();
 }
@@ -3422,7 +3455,8 @@ function renderizarPedidos() {
   };
 
   var inicioHoje = inicioDoDia(new Date()).getTime();
-  container.innerHTML = filtrados.map(function (p) {
+  atualizarPiscaMesa();
+  var cartaoPedido = function (p, dentroMesa) {
     var criado = p.created_at ? new Date(p.created_at) : null;
     var hora = criado ? (criado.getTime() < inicioHoje ? formatarDataHora(p.created_at) : criado.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })) : '';
     var itensHtml = itensDoPedido(p).map(function (i) {
@@ -3458,6 +3492,22 @@ function renderizarPedidos() {
     var linkTel = linkWhatsApp(tel);
     var contato = tel ? '<p class="text-[11.5px] text-slate-500 flex items-center gap-1.5 mt-0.5 tabular-nums">' + I_TEL + (linkTel ? '<a href="' + esc(linkTel) + '" target="_blank" rel="noopener" class="hover:underline">' + esc(tel) + '</a>' : esc(tel)) + '</p>' : '';
 
+    if (dentroMesa) {
+      return '<div class="rounded-md border p-3 space-y-2 ' + (aguardando ? 'border-amber-300 bg-amber-50/40' : 'border-[#E2E5EC] bg-white') + '">' +
+        '<div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">' +
+          '<div class="flex items-center gap-1.5 min-w-0"><span class="font-bold text-slate-900 text-[12.5px] tabular-nums">#' + esc(p.id) + '</span>' +
+            '<span class="text-[11px] text-slate-400 tabular-nums">' + esc(hora) + '</span>' +
+            (p.origem === 'qrcode' ? '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-200">Pedido pelo QR</span>' : '') + '</div>' +
+          '<div class="flex items-center gap-1 flex-shrink-0">' +
+            btnIcone('imprimirComanda(' + Number(p.id) + ')', 'Comanda da cozinha', I_COMANDA, 'hover:bg-amber-50 hover:text-[#A8843E]') +
+            btnIcone('imprimirPedido(' + Number(p.id) + ')', 'Cupom do cliente', I_CUPOM, 'hover:bg-slate-200/70 hover:text-slate-900') +
+            btnIcone('excluirPedido(' + Number(p.id) + ')', 'Excluir pedido', I_LIXO, 'hover:bg-red-50 hover:text-[#B91C1C]', dis) +
+            '<span class="ml-1 text-[10.5px] font-bold px-2 py-0.5 rounded border whitespace-nowrap ' + classeBadgeStatus(p.status) + '">' + esc(p.status || '-') + '</span>' +
+          '</div></div>' +
+        '<div class="bg-[#F4F5F7]/80 border border-[#E2E5EC] rounded-md p-2.5">' + (itensHtml || '<p class="text-[12px] text-slate-400">Sem itens</p>') + '</div>' +
+        (p.observacoes ? '<p class="text-[12px] text-[#B91C1C] bg-[#FEE2E2]/60 border border-red-200 px-2.5 py-1.5 rounded-md font-semibold break-words">Obs: ' + esc(p.observacoes) + '</p>' : '') +
+        botoes + '</div>';
+    }
     return '<div class="bg-white rounded-lg p-4 border flex flex-col justify-between gap-3.5 transition-colors ' + (aguardando ? 'border-amber-300 ring-2 ring-amber-200/70' : 'border-[#E2E5EC] hover:border-slate-300') + '">' +
       '<div class="space-y-2.5">' +
         '<div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100">' +
@@ -3480,7 +3530,39 @@ function renderizarPedidos() {
         '<div class="flex items-center justify-between"><span class="text-[12px] text-slate-600">Pagamento: <strong class="text-slate-800">' + esc(p.forma_pagamento || '-') + '</strong></span><span class="text-[15px] font-bold text-slate-900 tabular-nums">' + brl(p.total) + '</span></div>' +
         botoes +
       '</div></div>';
-  }).join('');
+  };
+
+  var cartaoMesa = function (lista) {
+    lista = lista.slice().sort(function (a, b) { return a.id - b.id; });
+    var mesa = lista[0].mesa || '?';
+    var finais = ['Concluído', 'Cancelado', 'Recusado'];
+    var total = lista.filter(function (p) { return p.status !== 'Cancelado' && p.status !== 'Recusado'; }).reduce(function (s, p) { return s + Number(p.total || 0); }, 0);
+    var aguard = lista.some(function (p) { return STATUS_AGUARDANDO.indexOf(p.status) !== -1; });
+    var preparo = lista.filter(function (p) { return p.status === 'Em preparo'; });
+    var servida = lista.every(function (p) { return finais.indexOf(p.status) !== -1; });
+    var desde = lista[0].created_at ? new Date(lista[0].created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '';
+    return '<div class="bg-white rounded-lg p-4 border flex flex-col gap-3 ' + (aguard ? 'border-amber-300 ring-2 ring-amber-200/70' : 'border-[#E2E5EC]') + '">' +
+      '<div class="flex items-center justify-between gap-3 pb-2.5 border-b border-slate-100">' +
+        '<div class="flex items-center gap-2.5 min-w-0"><span class="min-w-9 h-9 px-1.5 rounded-md bg-[#111317] text-white flex items-center justify-center text-[14px] font-bold tabular-nums">' + esc(mesa) + '</span>' +
+          '<div class="min-w-0"><p class="text-[14px] font-bold text-slate-900">Mesa ' + esc(mesa) + '</p>' +
+          '<p class="text-[11px] text-slate-500">' + lista.length + (lista.length > 1 ? ' rodadas' : ' rodada') + ' · desde ' + esc(desde) + (servida ? ' · tudo servido' : '') + '</p></div></div>' +
+        '<div class="text-right flex-shrink-0"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Total da mesa</p><p class="text-[16px] font-bold text-slate-900 tabular-nums">' + brl(total) + '</p></div>' +
+      '</div>' +
+      '<div class="space-y-2.5">' + lista.map(function (p) { return cartaoPedido(p, true); }).join('') + '</div>' +
+      (preparo.length > 1 ? '<button onclick="mesaTudoPronto(\'' + preparo.map(function (p) { return Number(p.id); }).join(',') + '\')" class="w-full py-2 rounded-md bg-[#DBEAFE] hover:bg-blue-200/70 text-[#1D4ED8] border border-blue-300 text-[12px] font-semibold cursor-pointer">Tudo pronto p/ servir (' + preparo.length + ' rodadas)</button>' : '') +
+      '</div>';
+  };
+
+  // pedidos de mesa: um cartão por mesa (conta aberta), no lugar da rodada mais nova
+  var grupos = {}, ordem = [];
+  filtrados.forEach(function (p) {
+    if (p.tipo_recebimento === 'Mesa' && (p.mesa || p.mesa_conta_id)) {
+      var k = p.mesa_conta_id ? 'c' + p.mesa_conta_id : 'm' + p.mesa;
+      if (!grupos[k]) { grupos[k] = []; ordem.push({ g: k }); }
+      grupos[k].push(p);
+    } else ordem.push({ p: p });
+  });
+  container.innerHTML = ordem.map(function (o) { return o.p ? cartaoPedido(o.p) : cartaoMesa(grupos[o.g]); }).join('');
 }
 
 async function executarMudancaStatus(id, status) {
@@ -4860,6 +4942,12 @@ function preencherCardAparelho() {
   $('imp-fonte').value = String(c.fonte);
   $('imp-logo').checked = c.logo;
   if ($('imp-auto-garcom')) $('imp-auto-garcom').checked = lerAparelho('imp_auto_garcom', '0') === '1';
+  if ($('som-mesa')) {
+    var idm = lerAparelho('som_mesa', 'melodia');
+    $('som-mesa').innerHTML = SONS_CAMPAINHA.map(function (s) {
+      return '<option value="' + s.id + '"' + (s.id === idm ? ' selected' : '') + '>' + esc(s.nome) + '</option>';
+    }).join('') + '<option value="nenhum"' + (idm === 'nenhum' ? ' selected' : '') + '>Sem som (só piscar)</option>';
+  }
 }
 
 /* ---------------------------------------------------------------- senha */
@@ -4891,6 +4979,26 @@ document.addEventListener('DOMContentLoaded', function () {
   aplicarSomEscolhido();
   prepararLogoImpressao(false);
 });
+
+
+/* ---------------------------------------------------------------- som do pedido da mesa */
+var somMesa = new Audio();
+somMesa.preload = 'auto';
+function escolherSomMesa(id) { gravarAparelho('som_mesa', id); tocarSomMesa(true); }
+function tocarSomMesa(teste) {
+  if (!teste && typeof somAtivo !== 'undefined' && !somAtivo) return; // painel no mudo
+  var id = lerAparelho('som_mesa', 'melodia');
+  if (id === 'nenhum') return;
+  var s = SONS_CAMPAINHA.find(function (x) { return x.id === id; }) || SONS_CAMPAINHA[4];
+  var src = s.id === 'arquivo' ? (lerAparelho('som_arquivo', '') || 'som-melodia.wav') : s.arquivo;
+  try {
+    if (somMesa.getAttribute('src') !== src) somMesa.src = src;
+    somMesa.volume = Math.max(0.1, Math.min(1, Number(lerAparelho('som_volume', '1')) || 1));
+    somMesa.currentTime = 0;
+    var p = somMesa.play();
+    if (p && p.catch) p.catch(function () { bipeReserva(); });
+  } catch (e) { bipeReserva(); }
+}
 
   </script>
   <script>
