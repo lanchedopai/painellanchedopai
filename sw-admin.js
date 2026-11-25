@@ -6,7 +6,7 @@
  *
  * Ao publicar uma nova versão do painel, aumente o número abaixo.
  * ===================================================================== */
-const VERSAO = 'loja-admin-v1';
+const VERSAO = 'loja-admin-v2';
 const CACHE_APP = VERSAO + '-app';
 const CACHE_CDN = VERSAO + '-cdn';
 

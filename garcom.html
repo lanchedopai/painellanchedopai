@@ -48,6 +48,12 @@
   <style>
     body { padding-bottom: env(safe-area-inset-bottom); -webkit-tap-highlight-color: transparent; }
     .tela { display: none; } .tela.ativa { display: block; }
+    .tecla { width: 72px; height: 72px; justify-self: center; border-radius: 9999px; background: #fff; font-size: 24px; font-weight: 800; box-shadow: 0 1px 2px rgba(0,0,0,.06); border: 1px solid #e5e7eb; }
+    .tecla:active { background: #f3f4f6; transform: scale(.96); }
+    .ponto-pin { width: 14px; height: 14px; border-radius: 9999px; border: 2px solid #9ca3af; transition: all .15s; }
+    .ponto-pin.cheio { background: var(--cor); border-color: var(--cor); transform: scale(1.1); }
+    @keyframes tremer { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+    .tremer { animation: tremer .25s 2; }
     #toast { position: fixed; left: 50%; bottom: calc(90px + env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 90; }
     @media print {
       body * { visibility: hidden; }
@@ -70,18 +76,31 @@
     <button id="btn-sair" onclick="sair()" class="hidden text-white/80 text-xs font-bold px-2 py-1 rounded-lg bg-white/10">Sair</button>
   </header>
 
-  <!-- LOGIN -->
-  <section id="tela-login" class="tela ativa px-5 pt-10 max-w-sm mx-auto">
-    <div class="bg-white rounded-3xl p-6 shadow-sm space-y-4 text-center">
-      <div class="w-14 h-14 mx-auto rounded-2xl bg-[var(--cor)] text-[var(--destaque)] flex items-center justify-center text-2xl"><i class="fa-solid fa-bell-concierge"></i></div>
-      <div><h2 class="font-black text-xl">App das mesas</h2><p class="text-xs text-gray-500">Entre com o seu usuário de garçom</p></div>
-      <form onsubmit="entrar(event)" class="space-y-3">
-        <input type="email" id="login-email" required autocomplete="username" placeholder="E-mail" class="w-full border border-gray-300 rounded-xl p-3 text-sm text-center">
-        <input type="password" id="login-senha" required autocomplete="current-password" placeholder="Senha" class="w-full border border-gray-300 rounded-xl p-3 text-sm text-center">
-        <p id="login-erro" class="hidden text-xs text-rose-600 font-bold"></p>
-        <button id="btn-entrar" class="w-full bg-[var(--cor)] text-white font-black py-3 rounded-xl">Entrar</button>
-      </form>
+  <!-- LOGIN: o garçom toca no nome e digita o PIN de 4 números -->
+  <section id="tela-login" class="tela ativa px-5 pt-8 pb-10 max-w-sm mx-auto">
+    <div id="login-quem" class="space-y-4">
+      <div class="text-center">
+        <img id="logo-login" alt="" class="hidden w-20 h-20 mx-auto rounded-2xl object-contain mb-3">
+        <h2 class="font-black text-xl">Quem está atendendo?</h2>
+        <p class="text-xs text-gray-500 mt-0.5">Toque no seu nome</p>
+      </div>
+      <div id="lista-garcons" class="grid grid-cols-2 gap-2.5"></div>
     </div>
+    <div id="login-pin" class="hidden text-center space-y-5">
+      <div>
+        <span id="pin-inicial" class="w-16 h-16 mx-auto rounded-full bg-[var(--cor)] text-white text-2xl font-black flex items-center justify-center"></span>
+        <h2 class="font-black text-xl mt-3">Olá, <span id="pin-nome"></span></h2>
+        <p class="text-xs text-gray-500">Digite o seu PIN</p>
+      </div>
+      <div id="pin-pontos" class="flex justify-center gap-4"></div>
+      <div class="grid grid-cols-3 gap-4 max-w-[264px] mx-auto">
+        <button class="tecla" data-d="1">1</button><button class="tecla" data-d="2">2</button><button class="tecla" data-d="3">3</button>
+        <button class="tecla" data-d="4">4</button><button class="tecla" data-d="5">5</button><button class="tecla" data-d="6">6</button>
+        <button class="tecla" data-d="7">7</button><button class="tecla" data-d="8">8</button><button class="tecla" data-d="9">9</button>
+        <button class="tecla text-sm" data-d="voltar" aria-label="Trocar garçom"><i class="fa-solid fa-arrow-left"></i></button><button class="tecla" data-d="0">0</button><button class="tecla text-sm" data-d="apagar" aria-label="Apagar"><i class="fa-solid fa-delete-left"></i></button>
+      </div>
+    </div>
+    <p id="login-erro" class="hidden mt-5 text-sm text-rose-600 font-bold text-center"></p>
   </section>
 
   <!-- MAPA DE MESAS -->
@@ -137,7 +156,7 @@
     var CFG = window.CONFIG_SUPABASE || {};
     var URL_SB = String(CFG.url || '').replace(/\/+$/, ''), CHAVE = String(CFG.chave || '');
     var sb = (window.supabase && /^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(URL_SB) && CHAVE.indexOf('COLOQUE') === -1)
-      ? window.supabase.createClient(URL_SB, CHAVE, { auth: { persistSession: true, autoRefreshToken: true, storageKey: 'loja-garcom-auth' } }) : null;
+      ? window.supabase.createClient(URL_SB, CHAVE, { auth: { persistSession: false, autoRefreshToken: false, storageKey: 'loja-garcom-auth' } }) : null;
     var PONTOS = ['Mal passado', 'Ao ponto', 'Bem passado'];
     var estado = { tela: 'login', papel: null, nome: '', painel: null, mesa: null, cardapio: [], adicionais: [], paes: [], porId: {}, categoria: 'Todos', rodada: [], aberto: null, conhecidos: null, enviando: false };
 
@@ -161,7 +180,7 @@
     function marca(c) {
       try { localStorage.setItem('loja_marca', JSON.stringify(c)); } catch (e) {}
       aplicarCoresLoja(c.cor_primaria, c.cor_destaque);
-      if (c.logo_url) { $('logo-topo').src = c.logo_url; $('logo-topo').classList.remove('hidden'); }
+      if (c.logo_url) { ['logo-topo', 'logo-login'].forEach(function (id) { $(id).src = c.logo_url; $(id).classList.remove('hidden'); }); }
     }
     (function () { try { var m = JSON.parse(localStorage.getItem('loja_marca') || 'null'); if (m) document.addEventListener('DOMContentLoaded', function () { marca(m); }); } catch (e) {} })();
 
@@ -182,32 +201,90 @@
       else irPara('mapa');
     }
 
-    /* ---------------- login ---------------- */
-    async function entrar(e) {
-      e.preventDefault();
-      var err = $('login-erro'); err.classList.add('hidden');
-      if (!sb) { err.textContent = 'App não configurado (config.js).'; err.classList.remove('hidden'); return; }
-      $('btn-entrar').disabled = true;
-      var r = await sb.auth.signInWithPassword({ email: $('login-email').value.trim(), password: $('login-senha').value });
-      $('btn-entrar').disabled = false;
-      if (r.error) { err.textContent = /Invalid login/i.test(r.error.message) ? 'E-mail ou senha incorretos.' : r.error.message; err.classList.remove('hidden'); return; }
-      $('login-senha').value = '';
+    /* ---------------- login (nome + PIN) ---------------- */
+    var CHAVE_SESSAO = 'loja_garcom_sessao';
+    function lerSessao() { try { return JSON.parse(localStorage.getItem(CHAVE_SESSAO) || 'null'); } catch (e) { return null; } }
+    function erroLogin(msg) { var e = $('login-erro'); e.textContent = msg || ''; e.classList.toggle('hidden', !msg); }
+    async function mostrarLogin(msg) {
+      clearInterval(estado.timer); estado.papel = null; estado.token = null;
+      irPara('login'); $('login-quem').classList.remove('hidden'); $('login-pin').classList.add('hidden'); erroLogin(msg);
+      $('lista-garcons').innerHTML = '<p class="col-span-2 text-center text-xs text-gray-400 py-6">Carregando...</p>';
+      var r = await sb.rpc('garcom_lista');
+      if (r.error) { $('lista-garcons').innerHTML = ''; erroLogin(/garcom_lista|function/.test(r.error.message) ? 'O dono precisa rodar o instalar.sql novo no Supabase.' : 'Sem conexão. Tente de novo.'); return; }
+      var lista = r.data || [];
+      $('lista-garcons').innerHTML = lista.length ? lista.map(function (g) {
+        return '<button onclick="escolherGarcom(' + Number(g.id) + ', this.dataset.nome)" data-nome="' + esc(g.nome) + '" class="bg-white rounded-2xl p-4 shadow-sm border border-gray-200 active:scale-95 transition flex flex-col items-center gap-2">' +
+          '<span class="w-12 h-12 rounded-full bg-gray-100 text-gray-800 text-lg font-black flex items-center justify-center">' + esc(String(g.nome).charAt(0).toUpperCase()) + '</span>' +
+          '<span class="text-sm font-bold truncate max-w-full">' + esc(g.nome) + '</span></button>';
+      }).join('') : '<p class="col-span-2 text-center text-sm text-gray-500 bg-white rounded-2xl p-5">Nenhum garçom cadastrado.<br><span class="text-xs">O dono cadastra no painel: Ajustes → Mesas e garçons.</span></p>';
+    }
+    function escolherGarcom(id, nome) {
+      estado.login = { id: id, nome: nome, pin: '' };
+      $('pin-nome').textContent = nome; $('pin-inicial').textContent = String(nome).charAt(0).toUpperCase();
+      $('login-quem').classList.add('hidden'); $('login-pin').classList.remove('hidden'); erroLogin('');
+      desenharPontos();
+    }
+    function desenharPontos() {
+      var n = (estado.login && estado.login.pin.length) || 0;
+      $('pin-pontos').innerHTML = [0, 1, 2, 3].map(function (i) { return '<span class="ponto-pin' + (i < n ? ' cheio' : '') + '"></span>'; }).join('');
+    }
+    function tecla(d) {
+      if (!estado.login || estado.login.enviando) return;
+      if (d === 'voltar') { mostrarLogin(); return; }
+      if (d === 'apagar') { estado.login.pin = estado.login.pin.slice(0, -1); desenharPontos(); return; }
+      if (estado.login.pin.length >= 4) return;
+      estado.login.pin += d; desenharPontos(); erroLogin('');
+      if (estado.login.pin.length === 4) entrarComPin();
+    }
+    async function entrarComPin() {
+      var l = estado.login; l.enviando = true;
+      var r = await sb.rpc('garcom_entrar', { p_id: l.id, p_pin: l.pin });
+      l.enviando = false; l.pin = '';
+      var d = r.data || {};
+      if (r.error || !d.ok) {
+        desenharPontos(); $('pin-pontos').classList.remove('tremer'); void $('pin-pontos').offsetWidth; $('pin-pontos').classList.add('tremer');
+        if (navigator.vibrate) navigator.vibrate(200);
+        erroLogin(r.error ? 'Sem conexão. Tente de novo.'
+          : d.erro === 'BLOQUEADO' ? 'Muitas tentativas erradas. Tente de novo em ' + d.minutos + ' min ou peça ao dono para trocar o seu PIN.'
+          : d.erro === 'PIN_INCORRETO' ? 'PIN incorreto.' + (d.restam <= 2 ? ' Restam ' + d.restam + ' tentativa(s).' : '')
+          : 'Garçom não encontrado. Peça ao dono para conferir o cadastro.');
+        return;
+      }
+      try { localStorage.setItem(CHAVE_SESSAO, JSON.stringify({ token: d.token, nome: d.nome })); } catch (e) {}
       await iniciarSessao();
     }
+    document.addEventListener('click', function (e) { var b = e.target.closest('.tecla'); if (b) tecla(b.dataset.d); });
+    document.addEventListener('keydown', function (e) {
+      if (estado.tela !== 'login' || $('login-pin').classList.contains('hidden')) return;
+      if (/^[0-9]$/.test(e.key)) tecla(e.key); else if (e.key === 'Backspace') tecla('apagar');
+    });
+
     async function iniciarSessao() {
-      var p = await sb.rpc('meu_papel');
-      if (p.error || !p.data || !p.data.papel) {
-        await sb.auth.signOut();
-        $('login-erro').textContent = p.error ? 'Erro: ' + p.error.message : 'Este usuário não é garçom desta loja. Peça ao dono para cadastrar você no painel.';
-        $('login-erro').classList.remove('hidden'); irPara('login'); return;
-      }
-      estado.papel = p.data.papel; estado.nome = p.data.papel === 'admin' ? 'Administrador' : p.data.nome;
+      var s = lerSessao();
+      if (!s || !s.token) { mostrarLogin(); return; }
+      estado.token = s.token; estado.nome = s.nome; estado.papel = 'garcom';
       await carregarCardapio();
-      await atualizar();
+      if (!(await atualizar())) return;
       irPara('mapa');
       clearInterval(estado.timer); estado.timer = setInterval(atualizar, 5000);
     }
-    async function sair() { if (!confirm('Sair do app das mesas?')) return; clearInterval(estado.timer); await sb.auth.signOut(); irPara('login'); }
+    // chama uma ação do garçom levando o código da sessão
+    async function acao(nome, args) {
+      var r = await sb.rpc(nome, Object.assign({ p_token: estado.token }, args || {}));
+      if (r.error && /SESSAO_INVALIDA/.test(r.error.message)) {
+        try { localStorage.removeItem(CHAVE_SESSAO); } catch (e) {}
+        mostrarLogin('Sua entrada expirou ou o PIN foi trocado. Entre de novo.');
+        r.sessaoCaiu = true;
+      }
+      return r;
+    }
+    async function sair() {
+      if (!confirm('Sair do app das mesas?')) return;
+      clearInterval(estado.timer);
+      sb.rpc('garcom_sair', { p_token: estado.token }).then(function () {}, function () {});
+      try { localStorage.removeItem(CHAVE_SESSAO); } catch (e) {}
+      mostrarLogin();
+    }
 
     /* ---------------- dados ---------------- */
     async function carregarCardapio() {
@@ -223,8 +300,8 @@
     }
     async function atualizar() {
       if (document.hidden && estado.painel) return;
-      var r = await sb.rpc('mesas_painel');
-      if (r.error) { if (/Acesso negado|JWT/i.test(r.error.message)) { clearInterval(estado.timer); irPara('login'); } return; }
+      var r = await acao('garcom_painel');
+      if (r.error) return false;
       var antes = estado.conhecidos, agora = {};
       (r.data.mesas || []).forEach(function (m) {
         if (m.chamado_em) agora['c' + m.numero + m.chamado_em] = 1;
@@ -236,6 +313,7 @@
       $('aviso-desativado').classList.toggle('hidden', !!r.data.ativo);
       if (estado.tela === 'mapa') renderizarMapa();
       if (estado.tela === 'mesa') renderizarMesa();
+      return true;
     }
     function mesaAtual() { return (estado.painel.mesas || []).find(function (m) { return m.numero === estado.mesa; }) || { numero: estado.mesa }; }
     function situacao(m) {
@@ -318,12 +396,12 @@
     }
     async function acaoPedido(id, acao) {
       if (acao === 'cancelar' && !confirm('Cancelar o pedido #' + id + '?')) return;
-      var r = await sb.rpc('mesa_status_pedido', { p_pedido: id, p_acao: acao });
-      if (r.error) { aviso(r.error.message, 'bg-rose-600'); return; }
+      var r = await window.acao('garcom_status_pedido', { p_pedido: id, p_acao: acao });
+      if (r.error) { if (!r.sessaoCaiu) aviso(r.error.message, 'bg-rose-600'); return; }
       aviso(acao === 'servido' ? '✓ Servido' : acao === 'aceitar' ? '✓ Enviado para a cozinha' : 'Pedido cancelado', 'bg-emerald-600');
       atualizar();
     }
-    async function atenderChamado() { await sb.rpc('mesa_atender_chamado', { p_mesa: estado.mesa }); atualizar(); }
+    async function atenderChamado() { await acao('garcom_atender_chamado', { p_mesa: estado.mesa }); atualizar(); }
 
     /* ---------------- cardápio ---------------- */
     function abrirCardapio() { if (!estado.painel.ativo) { aviso('App de mesas desligado no painel.', 'bg-rose-600'); return; } irPara('cardapio'); atualizarBarra(); }
@@ -363,7 +441,7 @@
       var pa = paesDo(p); if (pa.length) h += bloco('Pão', pa.map(function (t) { return linha('radio', 'pao', t.id, t.nome + (t.padrao ? ' (normal)' : ''), t.extra ? '+ ' + brl(t.extra) : '', t.padrao); }).join(''));
       if (p.pergunta_ponto) h += bloco('Ponto da carne', PONTOS.map(function (x) { return linha('radio', 'ponto', x, x, '', x === 'Ao ponto'); }).join(''));
       if ((p.ingredientes || []).length) h += bloco('Retirar', '<div class="flex flex-wrap gap-1.5">' + p.ingredientes.map(function (i) { return '<label><input type="checkbox" name="sem" value="' + esc(i) + '" class="peer sr-only"><span class="inline-block px-3 py-2 rounded-full border border-gray-300 text-xs font-bold peer-checked:bg-rose-50 peer-checked:border-rose-400 peer-checked:text-rose-700 peer-checked:line-through">' + esc(i) + '</span></label>'; }).join('') + '</div>');
-      if (p.aceita_adicionais && estado.adicionais.length) h += bloco('Adicionais', estado.adicionais.map(function (a) { return linha('checkbox', 'ad', a.id, a.nome, '+ ' + brl(a.preco), false); }).join(''));
+      if (p.aceita_adicionais && estado.adicionais.length) h += '<details class="group border border-gray-200 rounded-xl"><summary class="flex items-center justify-between p-3 cursor-pointer list-none [&::-webkit-details-marker]:hidden"><span class="text-xs font-black uppercase text-gray-500">Adicionais <span class="normal-case font-bold text-gray-400">· ' + estado.adicionais.length + ' opções</span></span><i class="fa-solid fa-chevron-down text-xs text-gray-400 transition-transform group-open:rotate-180"></i></summary><div class="space-y-1.5 p-2 pt-0">' + estado.adicionais.map(function (a) { return linha('checkbox', 'ad', a.id, a.nome, '+ ' + brl(a.preco), false); }).join('') + '</div></details>';
       h += '<input id="op-obs" maxlength="200" placeholder="Observação (opcional)" class="w-full border border-gray-300 rounded-xl p-3 text-sm"></div>' +
         '<button onclick="confirmarOpcoes()" class="w-full mt-4 bg-[var(--cor)] text-white font-black py-3.5 rounded-2xl">Adicionar · <span id="op-preco"></span></button>';
       abrirFolha(h); precoOpcoes();
@@ -410,11 +488,11 @@
       if (estado.enviando || !estado.rodada.length) return;
       estado.enviando = true; $('btn-enviar').disabled = true; $('btn-enviar').textContent = 'Enviando...';
       var pessoas = $('rod-pessoas') ? parseInt($('rod-pessoas').value, 10) : null;
-      var r = await sb.rpc('mesa_lancar', { p_mesa: estado.mesa, p_obs: $('rod-obs').value.trim() || null, p_pessoas: pessoas || null, p_itens: estado.rodada.map(function (i) {
+      var r = await acao('garcom_lancar', { p_mesa: estado.mesa, p_obs: $('rod-obs').value.trim() || null, p_pessoas: pessoas || null, p_itens: estado.rodada.map(function (i) {
         return { id: i.id, quantidade: i.qtd, adicionais: i.adicionais.map(function (a) { return a.id; }), sem: i.sem, ponto: i.ponto, escolhas: i.escolhas.map(function (e) { return e.produto_id; }), pao: i.pao ? i.pao.id : null, observacao: i.observacao };
       }) });
       estado.enviando = false;
-      if (r.error) { $('btn-enviar').disabled = false; $('btn-enviar').textContent = 'Tentar de novo'; aviso(/MESAS_DESATIVADAS/.test(r.error.message) ? 'App de mesas desligado no painel.' : r.error.message, 'bg-rose-600'); return; }
+      if (r.error) { if (r.sessaoCaiu) return; $('btn-enviar').disabled = false; $('btn-enviar').textContent = 'Tentar de novo'; aviso(/MESAS_DESATIVADAS/.test(r.error.message) ? 'App de mesas desligado no painel.' : r.error.message, 'bg-rose-600'); return; }
       estado.rodada = []; fecharFolha(); bipe(1);
       aviso('✓ Pedido #' + r.data.id + ' enviado para a cozinha', 'bg-emerald-600');
       await atualizar(); irPara('mesa');
@@ -448,9 +526,9 @@
       var v = valoresFechamento();
       if (!confirm('Fechar a mesa ' + estado.mesa + ' com ' + brl(v.total) + ' no ' + estado.forma + '?')) return;
       $('btn-fc').disabled = true;
-      var r = await sb.rpc('mesa_fechar', { p_mesa: estado.mesa, p_forma: estado.forma, p_taxa: v.comTaxa, p_pessoas: v.pessoas });
+      var r = await acao('garcom_fechar', { p_mesa: estado.mesa, p_forma: estado.forma, p_taxa: v.comTaxa, p_pessoas: v.pessoas });
       $('btn-fc').disabled = false;
-      if (r.error) { aviso(/PEDIDO_PENDENTE/.test(r.error.message) ? 'Aceite ou recuse o pedido do QR antes de fechar.' : r.error.message, 'bg-rose-600'); return; }
+      if (r.error) { if (r.sessaoCaiu) return; aviso(/PEDIDO_PENDENTE/.test(r.error.message) ? 'Aceite ou recuse o pedido do QR antes de fechar.' : r.error.message, 'bg-rose-600'); return; }
       fecharFolha(); aviso('✓ Mesa ' + estado.mesa + ' fechada: ' + brl(r.data.total), 'bg-emerald-600');
       await atualizar(); irPara('mapa');
     }
@@ -476,8 +554,8 @@
     document.addEventListener('DOMContentLoaded', async function () {
       if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw-garcom.js', { scope: './garcom.html' }).catch(function () {});
       if (!sb) { $('login-erro').textContent = 'App não configurado: preencha o arquivo config.js.'; $('login-erro').classList.remove('hidden'); return; }
-      var s = await sb.auth.getSession();
-      if (s.data && s.data.session) await iniciarSessao();
+      carregarCardapio().catch(function () {});
+      if (lerSessao()) await iniciarSessao(); else mostrarLogin();
       document.addEventListener('visibilitychange', function () { if (!document.hidden && estado.papel) atualizar(); });
     });
   </script>

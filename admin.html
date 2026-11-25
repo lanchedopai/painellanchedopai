@@ -110,6 +110,66 @@
     .gerando-pdf .col-acoes { display: none !important; }
   </style>
   <!-- Configurações de PWA -->
+  <!-- VISUAL DO PAINEL: fonte Plus Jakarta Sans, grafite + champanhe -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config.theme.extend.fontFamily = { sans: ['"Plus Jakarta Sans"', 'Inter', 'system-ui', 'sans-serif'] };
+    /* O painel usa sempre o grafite + champanhe. As cores da loja continuam valendo
+       para o site, os ícones e a prévia em "Identidade da loja". */
+    (function () {
+      var original = aplicarCoresLoja;
+      var VARS = ['--cor', '--cor-escura', '--cor-clara', '--fundo', '--destaque', '--destaque-texto'].concat([50,100,200,300,400,500,600,700,800,900,950].map(function (n) { return '--p' + n; }));
+      window._coresLoja = {};
+      window.pintarPreviasLoja = function () {
+        document.querySelectorAll('.previa-loja').forEach(function (el) { VARS.forEach(function (k) { el.style.setProperty(k, window._coresLoja[k] || ''); }); });
+      };
+      window.aplicarCoresLoja = function (primaria, destaque) {
+        original(primaria, destaque);
+        var r = document.documentElement.style;
+        VARS.forEach(function (k) { window._coresLoja[k] = r.getPropertyValue(k); });
+        window.pintarPreviasLoja();
+        original('#111317', '#C5A059');
+      };
+      var m = {}; try { m = JSON.parse(localStorage.getItem('loja_marca') || '{}'); } catch (e) {}
+      window.aplicarCoresLoja(m.cor_primaria, m.cor_destaque);
+    })();
+  </script>
+  <style>
+    :root { --grafite: #111317; --champ: #C5A059; --champ-esc: #A8843E; --borda: #E2E5EC; --tela: #F4F5F7; }
+    body { font-family: "Plus Jakarta Sans", Inter, system-ui, sans-serif; }
+    #painel-conteudo { font-size: 13px; }
+    #painel-conteudo .rounded-3xl { border-radius: 12px; }
+    #painel-conteudo .rounded-2xl { border-radius: 10px; }
+    #painel-conteudo .rounded-xl { border-radius: 8px; }
+    #painel-conteudo .font-black { font-weight: 800; }
+    #painel-conteudo .font-extrabold { font-weight: 700; }
+    #painel-conteudo main .shadow-sm, #painel-conteudo main .shadow, #painel-conteudo main .shadow-md { box-shadow: 0 1px 2px 0 rgba(15, 23, 42, .04); }
+    #painel-conteudo main .border-gray-200, #painel-conteudo main .border-gray-100 { border-color: var(--borda); }
+    #painel-conteudo main section h2 > i:first-child, #painel-conteudo main section h3 > i:first-child { color: var(--champ-esc); }
+    #painel-conteudo main input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range]):not([type=file]),
+    #painel-conteudo main select, #painel-conteudo main textarea { border-color: var(--borda); }
+    #painel-conteudo input:focus, #painel-conteudo select:focus, #painel-conteudo textarea:focus { outline: none !important; border-color: var(--champ) !important; box-shadow: 0 0 0 3px rgba(197, 160, 89, .16); }
+    #painel-conteudo main thead tr { background: var(--tela); }
+    #painel-conteudo main thead th { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; color: #64748B; font-weight: 700; }
+    #painel-conteudo main td, #painel-conteudo main .text-2xl, #painel-conteudo main .text-xl, #painel-conteudo main .text-lg { font-variant-numeric: tabular-nums; }
+    #painel-conteudo main section h2.text-lg { font-size: 15px; letter-spacing: -.01em; }
+    #painel-conteudo main section h3.text-lg { font-size: 14.5px; }
+    .ico { flex-shrink: 0; }
+    .nav-item { border-left: 3px solid transparent; }
+    .nav-item .ico { color: #94A3B8; }
+    .nav-item.nav-ativo { background: #1C1F26; color: #fff; border-left-color: var(--champ); }
+    .nav-item.nav-ativo .ico { color: var(--champ); }
+    #btn-som i { color: var(--champ); width: 16px; text-align: center; }
+    .barra-escura::-webkit-scrollbar { width: 6px; } .barra-escura::-webkit-scrollbar-thumb { background: #2D333F; border-radius: 3px; }
+    #painel-conteudo main ::-webkit-scrollbar { width: 6px; height: 6px; } #painel-conteudo main ::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
+    .btn-filtro { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 6px; font-size: 11.5px; font-weight: 600; white-space: nowrap; cursor: pointer; background: var(--tela); color: #334155; }
+    .btn-filtro:hover { background: #E8EBF0; }
+    .btn-filtro .contagem { padding: 0 6px; border-radius: 4px; font-size: 10.5px; font-variant-numeric: tabular-nums; background: #fff; color: #475569; border: 1px solid var(--borda); }
+    .btn-filtro.sel { background: var(--grafite); color: #fff; }
+    .btn-filtro.sel .contagem { background: rgba(197, 160, 89, .25); color: var(--champ); border-color: transparent; }
+  </style>
   <link rel="manifest" href="manifest-admin.json">
   <meta name="theme-color" content="#7f1d1d">
   <meta name="mobile-web-app-capable" content="yes">
@@ -119,19 +179,19 @@
   <link rel="icon" type="image/png" sizes="192x192" href="admin-icone-192.png">
   <link rel="apple-touch-icon" href="admin-icone-192.png">
 </head>
-<body class="bg-gray-100 text-gray-800 antialiased min-h-screen">
+<body class="bg-[#F4F5F7] text-slate-900 antialiased min-h-screen">
 
   <!-- Tela de Login -->
   <div id="tela-login" class="fixed inset-0 bg-[var(--cor)] z-50 flex items-center justify-center p-4">
-    <div class="bg-white p-6 rounded-3xl shadow-2xl w-full max-w-xs text-center space-y-4">
+    <div class="bg-white p-7 rounded-xl shadow-2xl w-full max-w-xs text-center space-y-4 border border-[#232730]">
       <!-- LOGOTIPO: vem de Configurações > Identidade da loja -->
-      <div class="w-16 h-16 rounded-2xl bg-[var(--cor)] mx-auto flex items-center justify-center overflow-hidden text-white text-2xl">
+      <div class="w-20 h-20 rounded-2xl bg-[#111317] mx-auto flex items-center justify-center overflow-hidden text-white text-2xl">
         <img alt="" class="logo-loja hidden w-full h-full object-contain p-1" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
         <i class="fa-solid fa-store"></i>
       </div>
       <div>
-        <h2 class="nome-loja-texto text-2xl font-black text-[var(--cor)]">Painel da Loja</h2>
-        <p class="text-xs text-gray-500 font-medium mt-0.5">Painel do Parceiro / Gerência</p>
+        <h2 class="nome-loja-texto text-xl font-bold text-slate-900 tracking-tight">Painel da Loja</h2>
+        <p class="text-[10px] font-semibold tracking-[0.16em] uppercase text-slate-400 mt-1">Gestão comercial</p>
       </div>
       <form id="form-login" onsubmit="return enviarLogin(event)" class="space-y-3" autocomplete="on">
         <input type="email" id="campo-email" required autocomplete="username" placeholder="E-mail" class="w-full text-center text-sm font-semibold border border-gray-300 rounded-xl p-3 outline-purple-600">
@@ -148,141 +208,98 @@
   <!-- Conteúdo Principal -->
   <div id="painel-conteudo" class="hidden min-h-screen flex flex-col lg:flex-row">
     
-    <div id="sidebar-overlay" onclick="toggleSidebarMobile()" class="fixed inset-0 bg-black/50 z-40 hidden lg:hidden"></div>
+    <div id="sidebar-overlay" onclick="toggleSidebarMobile()" class="fixed inset-0 bg-slate-950/60 backdrop-blur-[1px] z-40 hidden lg:hidden"></div>
 
-    <!-- SIDEBAR -->
-    <aside id="sidebar-menu" class="fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-[var(--cor-escura)] text-white flex flex-col justify-between transform -translate-x-full lg:translate-x-0 transition-transform duration-200 shadow-2xl flex-shrink-0">
-      <div class="overflow-y-auto flex-1">
-        <div class="p-4 bg-[var(--cor)] flex items-center justify-between border-b border-purple-800/60">
-          <div class="flex items-center gap-3">
-            <!-- LOGOTIPO: vem de Configurações > Identidade da loja -->
-            <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
-              <img alt="" class="logo-loja hidden w-full h-full object-contain p-0.5" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
-              <i class="fa-solid fa-store"></i>
-            </div>
-            <div class="min-w-0">
-              <h1 class="nome-loja-texto text-base font-black leading-tight truncate max-w-[150px]">Painel da Loja</h1>
-              <p class="text-[10px] text-purple-200 mt-1">Gestão Comercial</p>
-            </div>
+    <!-- MENU LATERAL (grafite) -->
+    <aside id="sidebar-menu" class="fixed lg:sticky top-0 left-0 z-50 h-screen w-[256px] bg-[#111317] text-slate-200 border-r border-[#232730] flex flex-col justify-between transform -translate-x-full lg:translate-x-0 transition-transform duration-200 flex-shrink-0 select-none">
+      <div class="overflow-y-auto flex-1 barra-escura">
+        <div class="px-5 pt-5 pb-4 border-b border-[#232730] flex items-start justify-between gap-2">
+          <div class="min-w-0">
+            <!-- LOGOTIPO da loja (Configurações > Identidade da loja). Sem logo, aparece o nome. -->
+            <img alt="" class="logo-loja hidden h-20 w-auto max-w-[190px] object-contain" onerror="this.classList.add('hidden'); this.nextElementSibling.classList.remove('hidden');">
+            <span class="nome-loja-texto block text-[17px] font-bold text-white leading-tight truncate max-w-[190px]">Painel da Loja</span>
+            <p class="text-[9.5px] font-semibold tracking-[0.16em] text-slate-400 uppercase mt-2.5">Gestão comercial</p>
           </div>
-          <button onclick="toggleSidebarMobile()" class="lg:hidden text-purple-200 hover:text-white text-xl leading-none cursor-pointer">&times;</button>
+          <button onclick="toggleSidebarMobile()" class="lg:hidden text-slate-400 hover:text-white p-1 cursor-pointer" aria-label="Fechar menu"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
         </div>
-
-        <nav class="p-3 space-y-4 text-xs">
+        <div class="px-4 py-3 border-b border-[#232730]">
+          <button onclick="mudarAba('config')" class="w-full text-left bg-[#181B21] border border-[#232730] rounded-md p-2.5 cursor-pointer hover:border-[#2D333F]" title="Abrir configurações da loja">
+            <span id="sb-status-loja" class="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-emerald-400"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Loja aberta</span>
+            <span id="sb-status-detalhe" class="block text-[12px] font-semibold text-white mt-1">Delivery e retirada</span>
+          </button>
+        </div>
+        <nav class="py-3 space-y-4">
           <div>
-            <p class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-purple-300/70 mb-1.5">Operação</p>
-            <div class="space-y-1">
-              <button onclick="mudarAba('pedidos')" id="nav-btn-pedidos" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-bold text-purple-100 hover:bg-purple-800/60 transition cursor-pointer">
-                <span class="flex items-center gap-2.5"><i class="fa-solid fa-bell-concierge w-4 text-center"></i> Pedidos</span>
-                <span id="badge-novos-pedidos" class="hidden bg-amber-400 text-purple-950 text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
-              </button>
-              <button onclick="mudarAba('entregas')" id="nav-btn-entregas" class="nav-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-semibold text-purple-100 hover:bg-purple-800/60 transition cursor-pointer">
-                <i class="fa-solid fa-motorcycle w-4 text-center"></i> Entregas
-              </button>
+            <p class="px-5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 mb-1">Operação</p>
+            <div class="space-y-0.5">
+              <button onclick="mudarAba('pedidos')" id="nav-btn-pedidos" class="nav-item w-full flex items-center justify-between px-5 py-2 text-[12.5px] font-medium text-slate-300 hover:bg-[#181B21] hover:text-white transition-colors cursor-pointer"><span class="flex items-center gap-3"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M12 11h4M12 16h4M8 11h.01M8 16h.01"/></svg>Pedidos</span><span id="badge-novos-pedidos" class="hidden text-[10.5px] font-bold bg-[#C5A059]/20 text-[#C5A059] px-1.5 py-0.5 rounded tabular-nums">0</span></button>
+              <button onclick="mudarAba('entregas')" id="nav-btn-entregas" class="nav-item w-full flex items-center justify-between px-5 py-2 text-[12.5px] font-medium text-slate-300 hover:bg-[#181B21] hover:text-white transition-colors cursor-pointer"><span class="flex items-center gap-3"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><circle cx="15" cy="5" r="1"/><path d="M12 17.5V14l-3-3 4-3 2 3h2"/></svg>Entregas</span></button>
             </div>
           </div>
-
           <div>
-            <p class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-purple-300/70 mb-1.5">Gestão Comercial</p>
-            <div class="space-y-1">
-              <button onclick="mudarAba('dashboard')" id="nav-btn-dashboard" class="nav-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-bold bg-[var(--cor)] text-white shadow transition cursor-pointer">
-                <i class="fa-solid fa-chart-pie w-4 text-center"></i> Dashboard
-              </button>
-              <button onclick="mudarAba('stock')" id="nav-btn-stock" class="nav-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-semibold text-purple-100 hover:bg-purple-800/60 transition cursor-pointer">
-                <i class="fa-solid fa-mug-hot w-4 text-center"></i> Cardápio e produtos
-              </button>
-              <button onclick="mudarAba('clientes')" id="nav-btn-clientes" class="nav-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-semibold text-purple-100 hover:bg-purple-800/60 transition cursor-pointer">
-                <i class="fa-solid fa-users w-4 text-center"></i> Clientes
-              </button>
-              <button onclick="mudarAba('estoque')" id="nav-btn-estoque" class="nav-item w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-semibold text-purple-100 hover:bg-purple-800/60 transition cursor-pointer">
-                <span class="flex items-center gap-2.5"><i class="fa-solid fa-boxes-stacked w-4 text-center"></i> Estoque</span>
-                <span id="badge-alerta-estoque" class="hidden bg-rose-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">0</span>
-              </button>
-              <button onclick="mudarAba('precificacao')" id="nav-btn-precificacao" class="nav-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-semibold text-purple-100 hover:bg-purple-800/60 transition cursor-pointer">
-                <i class="fa-solid fa-calculator w-4 text-center"></i> Precificação e ficha técnica
-              </button>
+            <p class="px-5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 mb-1">Gestão comercial</p>
+            <div class="space-y-0.5">
+              <button onclick="mudarAba('dashboard')" id="nav-btn-dashboard" class="nav-item w-full flex items-center justify-between px-5 py-2 text-[12.5px] font-medium text-slate-300 hover:bg-[#181B21] hover:text-white transition-colors cursor-pointer"><span class="flex items-center gap-3"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>Dashboard</span></button>
+              <button onclick="mudarAba('stock')" id="nav-btn-stock" class="nav-item w-full flex items-center justify-between px-5 py-2 text-[12.5px] font-medium text-slate-300 hover:bg-[#181B21] hover:text-white transition-colors cursor-pointer"><span class="flex items-center gap-3"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>Cardápio e produtos</span></button>
+              <button onclick="mudarAba('clientes')" id="nav-btn-clientes" class="nav-item w-full flex items-center justify-between px-5 py-2 text-[12.5px] font-medium text-slate-300 hover:bg-[#181B21] hover:text-white transition-colors cursor-pointer"><span class="flex items-center gap-3"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>Clientes</span></button>
+              <button onclick="mudarAba('estoque')" id="nav-btn-estoque" class="nav-item w-full flex items-center justify-between px-5 py-2 text-[12.5px] font-medium text-slate-300 hover:bg-[#181B21] hover:text-white transition-colors cursor-pointer"><span class="flex items-center gap-3"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5M12 22V12"/></svg>Estoque</span><span id="badge-alerta-estoque" class="hidden text-[10.5px] font-bold bg-rose-500/20 text-rose-300 px-1.5 py-0.5 rounded tabular-nums">0</span></button>
+              <button onclick="mudarAba('precificacao')" id="nav-btn-precificacao" class="nav-item w-full flex items-center justify-between px-5 py-2 text-[12.5px] font-medium text-slate-300 hover:bg-[#181B21] hover:text-white transition-colors cursor-pointer"><span class="flex items-center gap-3"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h8M16 14v4M16 10h.01M12 10h.01M8 10h.01M12 14h.01M8 14h.01M12 18h.01M8 18h.01"/></svg>Precificação e ficha técnica</span></button>
             </div>
           </div>
-
           <div>
-            <p class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-purple-300/70 mb-1.5">Financeiro</p>
-            <div class="space-y-1">
-              <button onclick="mudarAba('financeiro')" id="nav-btn-financeiro" class="nav-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-semibold text-purple-100 hover:bg-purple-800/60 transition cursor-pointer">
-                <i class="fa-solid fa-wallet w-4 text-center"></i> Financeiro
-              </button>
-              <button onclick="mudarAba('caixa')" id="nav-btn-caixa" class="nav-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-semibold text-purple-100 hover:bg-purple-800/60 transition cursor-pointer">
-                <i class="fa-solid fa-cash-register w-4 text-center"></i> Fechamento de caixa
-              </button>
+            <p class="px-5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 mb-1">Financeiro</p>
+            <div class="space-y-0.5">
+              <button onclick="mudarAba('financeiro')" id="nav-btn-financeiro" class="nav-item w-full flex items-center justify-between px-5 py-2 text-[12.5px] font-medium text-slate-300 hover:bg-[#181B21] hover:text-white transition-colors cursor-pointer"><span class="flex items-center gap-3"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>Financeiro</span></button>
+              <button onclick="mudarAba('caixa')" id="nav-btn-caixa" class="nav-item w-full flex items-center justify-between px-5 py-2 text-[12.5px] font-medium text-slate-300 hover:bg-[#181B21] hover:text-white transition-colors cursor-pointer"><span class="flex items-center gap-3"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="12" cy="12" r="3.5"/><path d="M12 8.5V7M12 17v-1.5M15.5 12H17M7 12h1.5"/></svg>Fechamento de caixa</span></button>
             </div>
           </div>
-
           <div>
-            <p class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-purple-300/70 mb-1.5">Relatórios e Inteligência</p>
-            <div class="space-y-1">
-              <button onclick="mudarAba('relatorios')" id="nav-btn-relatorios" class="nav-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-semibold text-purple-100 hover:bg-purple-800/60 transition cursor-pointer">
-                <i class="fa-solid fa-chart-line w-4 text-center"></i> Relatórios de vendas
-              </button>
-              <button onclick="mudarAba('desempenho')" id="nav-btn-desempenho" class="nav-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-semibold text-purple-100 hover:bg-purple-800/60 transition cursor-pointer">
-                <i class="fa-solid fa-ranking-star w-4 text-center"></i> Desempenho dos produtos
-              </button>
-              <button onclick="mudarAba('rentabilidade')" id="nav-btn-rentabilidade" class="nav-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-semibold text-purple-100 hover:bg-purple-800/60 transition cursor-pointer">
-                <i class="fa-solid fa-magnifying-glass-dollar w-4 text-center"></i> Análise de rentabilidade
-              </button>
+            <p class="px-5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 mb-1">Relatórios e inteligência</p>
+            <div class="space-y-0.5">
+              <button onclick="mudarAba('relatorios')" id="nav-btn-relatorios" class="nav-item w-full flex items-center justify-between px-5 py-2 text-[12.5px] font-medium text-slate-300 hover:bg-[#181B21] hover:text-white transition-colors cursor-pointer"><span class="flex items-center gap-3"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="M18 17V9M13 17V5M8 17v-3"/></svg>Relatórios de vendas</span></button>
+              <button onclick="mudarAba('desempenho')" id="nav-btn-desempenho" class="nav-item w-full flex items-center justify-between px-5 py-2 text-[12.5px] font-medium text-slate-300 hover:bg-[#181B21] hover:text-white transition-colors cursor-pointer"><span class="flex items-center gap-3"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></svg>Desempenho dos produtos</span></button>
+              <button onclick="mudarAba('rentabilidade')" id="nav-btn-rentabilidade" class="nav-item w-full flex items-center justify-between px-5 py-2 text-[12.5px] font-medium text-slate-300 hover:bg-[#181B21] hover:text-white transition-colors cursor-pointer"><span class="flex items-center gap-3"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>Análise de rentabilidade</span></button>
             </div>
           </div>
-
           <div>
-            <p class="px-3 text-[10px] font-extrabold uppercase tracking-wider text-purple-300/70 mb-1.5">Configurações</p>
-            <div class="space-y-1">
-              <button onclick="mudarAba('config')" id="nav-btn-config" class="nav-item w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl font-semibold text-purple-100 hover:bg-purple-800/60 transition cursor-pointer">
-                <i class="fa-solid fa-gear w-4 text-center"></i> Configurações da loja
-              </button>
+            <p class="px-5 text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 mb-1">Configurações</p>
+            <div class="space-y-0.5">
+              <button onclick="mudarAba('config')" id="nav-btn-config" class="nav-item w-full flex items-center justify-between px-5 py-2 text-[12.5px] font-medium text-slate-300 hover:bg-[#181B21] hover:text-white transition-colors cursor-pointer"><span class="flex items-center gap-3"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 7h-9M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>Configurações da loja</span></button>
             </div>
           </div>
         </nav>
       </div>
-
-      <div class="p-3 border-t border-purple-800/60 flex items-center justify-between gap-2 bg-black/25">
-        <button onclick="alternarSom()" id="btn-som" class="flex-1 bg-purple-900/80 hover:bg-purple-800 text-white py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer">
+      <div class="p-3.5 border-t border-[#232730] bg-[#0D0F13] flex items-center justify-between gap-2">
+        <button onclick="alternarSom()" id="btn-som" class="flex-1 flex items-center gap-2.5 px-3 py-2 rounded-md bg-[#181B21] hover:bg-[#20242C] border border-[#232730] text-[12px] font-medium text-slate-200 transition-colors cursor-pointer">
           <i id="icone-som" class="fa-solid fa-volume-high"></i> <span id="texto-som">Som Ativo</span>
         </button>
-        <button onclick="sairPainel()" class="bg-red-800 hover:bg-red-700 text-white px-3 py-2 rounded-xl text-xs font-bold transition cursor-pointer" title="Sair do painel">
-          <i class="fa-solid fa-right-from-bracket"></i>
-        </button>
+        <button onclick="sairPainel()" title="Sair do painel" class="p-2 rounded-md bg-[#181B21] hover:bg-red-950/60 hover:text-red-300 text-slate-400 border border-[#232730] transition-colors cursor-pointer"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5M21 12H9"/></svg></button>
       </div>
     </aside>
 
     <!-- ÁREA PRINCIPAL -->
     <div class="flex-1 flex flex-col min-w-0">
       
-      <header class="bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-30 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3">
-          <button onclick="toggleSidebarMobile()" class="lg:hidden w-9 h-9 rounded-xl bg-purple-50 text-[var(--cor)] flex items-center justify-center font-bold cursor-pointer">
-            <i class="fa-solid fa-bars"></i>
-          </button>
-          <div>
-            <h2 id="titulo-pagina-atual" class="text-base font-extrabold text-gray-900 leading-tight">Dashboard</h2>
-            <p id="subtitulo-pagina-atual" class="text-[11px] text-gray-500">Visão geral do desempenho e vendas</p>
+      <header class="sticky top-0 z-30 min-h-16 bg-white border-b border-[#E2E5EC] px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <button onclick="toggleSidebarMobile()" class="lg:hidden p-1.5 rounded-md text-slate-600 hover:bg-slate-100 cursor-pointer" aria-label="Abrir menu"><svg class="ico w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+          <div class="min-w-0">
+            <h2 id="titulo-pagina-atual" class="text-[16px] sm:text-[17px] font-bold text-slate-900 tracking-tight truncate">Dashboard</h2>
+            <p id="subtitulo-pagina-atual" class="text-[11.5px] text-slate-500 truncate">Visão geral do desempenho e vendas</p>
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <button id="btn-ativar-alertas" onclick="ativarAlertas()" class="hidden bg-amber-400 hover:bg-amber-300 text-purple-950 px-3 py-1.5 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer animate-pulse" title="O navegador só toca a campainha depois de um toque na tela">
-            <i class="fa-solid fa-bell"></i> <span class="hidden sm:inline">Ativar alertas</span>
-          </button>
-          <span id="indicador-conexao" class="hidden text-[11px] font-bold px-2 py-1 rounded-lg bg-rose-100 text-rose-700"><i class="fa-solid fa-wifi"></i> Sem internet</span>
-          <button onclick="mudarAba('pedidos')" class="bg-purple-50 hover:bg-purple-100 text-[var(--cor)] px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-bell-concierge"></i> <span class="hidden sm:inline">Ver Pedidos</span>
-          </button>
-          <button onclick="atualizarTelaAtual()" class="bg-[var(--cor)] hover:bg-purple-900 text-white px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-            <i class="fa-solid fa-rotate-right"></i> <span class="hidden sm:inline">Atualizar</span>
-          </button>
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <button id="btn-ativar-alertas" onclick="ativarAlertas()" class="hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#FEF3C7] hover:bg-amber-200/80 text-[#92400E] border border-amber-300/80 text-[12px] font-semibold transition-colors cursor-pointer animate-pulse" title="O navegador só toca a campainha depois de um toque na tela"><svg class="ico w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg><span class="hidden sm:inline">Ativar alertas</span></button>
+          <span id="indicador-conexao" class="hidden text-[11px] font-bold px-2 py-1 rounded-md bg-rose-100 text-rose-700"><i class="fa-solid fa-wifi"></i> Sem internet</span>
+          <button onclick="mudarAba('pedidos')" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-white hover:bg-slate-50 text-slate-800 border border-[#E2E5EC] text-[12px] font-semibold transition-colors cursor-pointer"><svg class="ico w-3.5 h-3.5 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m3 17 2 2 4-4M3 7l2 2 4-4M13 6h8M13 12h8M13 18h8"/></svg><span>Ver pedidos</span></button>
+          <button onclick="atualizarTelaAtual()" class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-[#111317] hover:bg-[#1E222B] text-white border border-[#111317] text-[12px] font-semibold transition-colors cursor-pointer"><svg class="ico w-3.5 h-3.5 text-[#C5A059]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg><span class="hidden sm:inline">Atualizar</span></button>
         </div>
       </header>
 
       <!-- ========================================================= -->
       <!-- TELA 0: DASHBOARD       -->
       <!-- ========================================================= -->
-      <section id="aba-dashboard" class="max-w-6xl w-full mx-auto p-4 sm:p-6 space-y-6">
+      <section id="aba-dashboard" class="max-w-[1400px] w-full mx-auto p-4 sm:p-6 space-y-6">
         <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div class="flex flex-wrap items-center gap-1.5">
             <button onclick="selecionarPeriodoDashboard('hoje')" data-periodo="hoje" class="btn-periodo-dash px-3 py-1.5 rounded-xl text-xs font-bold bg-[var(--cor)] text-white cursor-pointer">Hoje</button>
@@ -412,32 +429,32 @@
       <!-- ========================================================= -->
       <!-- ABA 1: PEDIDOS DO DIA    -->
       <!-- ========================================================= -->
-      <section id="aba-pedidos" class="max-w-5xl w-full mx-auto p-4 hidden">
-        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <button onclick="abrirNovoPedidoBalcao()" class="bg-[var(--cor)] hover:bg-purple-900 text-white font-extrabold px-4 py-2.5 rounded-xl text-sm shadow-md flex items-center gap-2 cursor-pointer active:scale-95 transition"><i class="fa-solid fa-plus"></i> Novo pedido (mesa / balcão / telefone)</button>
-          <label class="text-[11px] text-gray-600 font-bold flex items-center gap-1.5">Ao aceitar, imprimir:
-            <select id="sel-impressao-aceite" onchange="salvarModoImpressao(this.value)" class="border border-gray-300 rounded-lg px-2 py-1 text-[11px] bg-white">
+      <section id="aba-pedidos" class="max-w-[1600px] w-full mx-auto p-4 sm:p-6 hidden space-y-4">
+        <div class="bg-white border border-[#E2E5EC] rounded-lg p-4 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex flex-wrap items-center gap-3">
+            <button onclick="abrirNovoPedidoBalcao()" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-[#111317] hover:bg-[#1E222B] text-white text-[12.5px] font-semibold transition-colors cursor-pointer"><svg class="ico w-4 h-4 text-[#C5A059]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Novo pedido (mesa / balcão / telefone)</span></button>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"><svg class="ico w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></span>
+              <input type="text" id="busca-pedidos" oninput="renderizarPedidos()" placeholder="Buscar #pedido, cliente ou item..." class="pl-8 pr-3 py-1.5 bg-[#F4F5F7] border border-[#E2E5EC] rounded-md text-[12px] text-slate-800 placeholder:text-slate-400 focus:bg-white w-56 sm:w-64">
+            </div>
+          </div>
+          <label class="flex items-center gap-2 text-[12px] text-slate-600 font-medium">Ao aceitar, imprimir:
+            <select id="sel-impressao-aceite" onchange="salvarModoImpressao(this.value)" class="bg-[#F4F5F7] border border-[#E2E5EC] rounded-md px-2.5 py-1.5 font-semibold text-slate-800 cursor-pointer">
               <option value="comanda">Comanda da cozinha</option><option value="cupom">Cupom do cliente</option><option value="ambos">Os dois</option><option value="nada">Nada</option>
             </select></label>
         </div>
-        <div class="flex gap-2 overflow-x-auto pb-3">
-          <button onclick="filtrarStatus('Todos')" class="btn-filtro px-3.5 py-1.5 rounded-full text-xs font-bold bg-[var(--cor)] text-white cursor-pointer" data-status="Todos">Todos (Hoje)</button>
-          <button onclick="filtrarStatus('Aguardando Aceite da Loja')" class="btn-filtro px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer" data-status="Aguardando Aceite da Loja">Novos (Aguardando Aceite)</button>
-          <button onclick="filtrarStatus('Aguardando Pagamento Pix')" class="btn-filtro px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer" data-status="Aguardando Pagamento Pix">Aguardando Pix</button>
-          <button onclick="filtrarStatus('Em preparo')" class="btn-filtro px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer" data-status="Em preparo">Em Preparação</button>
-          <button onclick="filtrarStatus('Saiu para entrega')" class="btn-filtro px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer" data-status="Saiu para entrega">Prontos / A caminho</button>
-          <button onclick="filtrarStatus('Concluído')" class="btn-filtro px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer" data-status="Concluído">Concluídos</button>
-          <button onclick="filtrarStatus('Recusado')" class="btn-filtro px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer" data-status="Recusado">Recusados</button>
+        <div id="barra-filtros" class="flex flex-wrap items-center gap-1.5 bg-white p-2 rounded-lg border border-[#E2E5EC]">
+          <button onclick="filtrarStatus('Todos')" class="btn-filtro sel" data-status="Todos"><span>Todos (hoje)</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Aguardando Aceite da Loja')" class="btn-filtro" data-status="Aguardando Aceite da Loja"><span>Novos (aguardando aceite)</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Aguardando Pagamento Pix')" class="btn-filtro" data-status="Aguardando Pagamento Pix"><span>Aguardando Pix</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Em preparo')" class="btn-filtro" data-status="Em preparo"><span>Em preparação</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Saiu para entrega')" class="btn-filtro" data-status="Saiu para entrega"><span>Prontos / a caminho</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Concluído')" class="btn-filtro" data-status="Concluído"><span>Concluídos</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Recusado')" class="btn-filtro" data-status="Recusado"><span>Recusados</span><span class="contagem">0</span></button>
         </div>
-        <div id="lista-pedidos-admin" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="col-span-full text-center py-12 text-gray-400 text-sm">A carregar pedidos de hoje...</div>
+        <div id="lista-pedidos-admin" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <div class="col-span-full text-center py-12 text-slate-400 text-sm">Carregando os pedidos de hoje...</div>
         </div>
       </section>
 
       <!-- ========================================================= -->
       <!-- ABA 2: RELATÓRIOS DO MÊS   -->
       <!-- ========================================================= -->
-      <section id="aba-relatorios" class="max-w-5xl w-full mx-auto p-4 hidden space-y-6">
+      <section id="aba-relatorios" class="max-w-[1400px] w-full mx-auto p-4 sm:p-6 hidden space-y-6">
         <div class="flex items-center justify-between flex-wrap gap-2">
           <div>
             <h2 class="text-lg font-extrabold text-[var(--cor)] flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> Relatório de Vendas do Mês</h2>
@@ -522,7 +539,7 @@
       <!-- ========================================================= -->
       <!-- ABA 3: CARDÁPIO & PRODUTOS    -->
       <!-- ========================================================= -->
-      <section id="aba-stock" class="max-w-5xl w-full mx-auto p-4 hidden space-y-6">
+      <section id="aba-stock" class="max-w-[1400px] w-full mx-auto p-4 sm:p-6 hidden space-y-6">
         <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200">
           <div class="flex items-center justify-between pb-4 border-b border-gray-100 flex-wrap gap-2">
             <div>
@@ -560,7 +577,7 @@
       <!-- ========================================================= -->
       <!-- ABA 4: PRECIFICAÇÃO & FICHA TÉCNICA    -->
       <!-- ========================================================= -->
-      <section id="aba-precificacao" class="max-w-6xl w-full mx-auto p-4 sm:p-6 hidden space-y-6">
+      <section id="aba-precificacao" class="max-w-[1400px] w-full mx-auto p-4 sm:p-6 hidden space-y-6">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <h2 class="text-lg font-extrabold text-[var(--cor)] flex items-center gap-2"><i class="fa-solid fa-calculator"></i> Precificação & Ficha Técnica Persistente</h2>
@@ -714,7 +731,7 @@
       <!-- ========================================================= -->
       <!-- ABA 5: CONTROLE FINANCEIRO    -->
       <!-- ========================================================= -->
-      <section id="aba-financeiro" class="max-w-6xl w-full mx-auto p-4 sm:p-6 hidden space-y-6">
+      <section id="aba-financeiro" class="max-w-[1400px] w-full mx-auto p-4 sm:p-6 hidden space-y-6">
         <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div class="flex flex-wrap items-center gap-1.5">
             <button onclick="selecionarPeriodoFinanceiro('mes_atual')" data-fin-periodo="mes_atual" class="btn-periodo-fin px-3 py-1.5 rounded-xl text-xs font-bold bg-[var(--cor)] text-white cursor-pointer">Este Mês</button>
@@ -880,7 +897,7 @@
       <!-- ========================================================= -->
       <!-- ABA 6: FECHAMENTO DE CAIXA    -->
       <!-- ========================================================= -->
-      <section id="aba-caixa" class="max-w-6xl w-full mx-auto p-4 sm:p-6 hidden space-y-6">
+      <section id="aba-caixa" class="max-w-[1400px] w-full mx-auto p-4 sm:p-6 hidden space-y-6">
         <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-wrap items-end justify-between gap-3">
           <div class="flex flex-wrap items-end gap-3">
             <div>
@@ -993,7 +1010,7 @@
       <!-- ========================================================= -->
       <!-- ABA 7: ESTOQUE INTEGRADO (ETAPA 5)    -->
       <!-- ========================================================= -->
-      <section id="aba-estoque" class="max-w-6xl w-full mx-auto p-4 sm:p-6 hidden space-y-6">
+      <section id="aba-estoque" class="max-w-[1400px] w-full mx-auto p-4 sm:p-6 hidden space-y-6">
         
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
@@ -1108,7 +1125,7 @@
       <!-- ========================================================= -->
       <!-- ABA 8: CLIENTES & CRM (ETAPA 6)     -->
       <!-- ========================================================= -->
-      <section id="aba-clientes" class="max-w-6xl w-full mx-auto p-4 sm:p-6 hidden space-y-6">
+      <section id="aba-clientes" class="max-w-[1400px] w-full mx-auto p-4 sm:p-6 hidden space-y-6">
         
         <!-- Barra de Ações e Filtro de Inatividade -->
         <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1225,7 +1242,7 @@
       <!-- ========================================================= -->
       <!-- ABA 9: ENTREGAS & ENTREGADORES (ETAPA 7)     -->
       <!-- ========================================================= -->
-      <section id="aba-entregas" class="max-w-6xl w-full mx-auto p-4 sm:p-6 hidden space-y-6">
+      <section id="aba-entregas" class="max-w-[1400px] w-full mx-auto p-4 sm:p-6 hidden space-y-6">
         
         <!-- Filtros e Indicadores Logísticos -->
         <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1371,7 +1388,7 @@
       <!-- ========================================================= -->
       <!-- ABA 8: CONFIGURAÇÕES DA LOJA   -->
       <!-- ========================================================= -->
-      <section id="aba-config" class="max-w-3xl w-full mx-auto p-4 hidden space-y-6">
+      <section id="aba-config" class="max-w-5xl w-full mx-auto p-4 sm:p-6 hidden space-y-5">
         <!-- Notificações de novos pedidos (push) -->
         <div id="card-notificacoes" class="bg-white p-5 rounded-2xl shadow-sm border-2 border-purple-200 space-y-3">
           <div class="flex items-start justify-between gap-3">
@@ -1443,12 +1460,12 @@
           <div class="pt-3 border-t border-gray-100">
             <p class="text-xs font-extrabold text-gray-800 mb-1">Garçons</p>
             <div id="lista-equipe"></div>
-            <form id="form-garcom" onsubmit="adicionarGarcom(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-2">
-              <input type="text" id="garcom-nome" maxlength="40" placeholder="Nome (ex.: Zé)" class="border border-gray-300 rounded-xl p-2.5 text-sm">
-              <input type="email" id="garcom-email" required placeholder="E-mail do garçom" class="border border-gray-300 rounded-xl p-2.5 text-sm">
-              <button type="submit" class="bg-[var(--cor)] hover:bg-purple-900 text-white font-bold py-2.5 rounded-xl text-sm cursor-pointer"><i class="fa-solid fa-user-plus mr-1"></i> Adicionar garçom</button>
+            <form id="form-garcom" onsubmit="adicionarGarcom(event)" class="grid grid-cols-2 sm:grid-cols-[1fr_140px_auto] gap-2 mt-2">
+              <input type="text" id="garcom-nome" required maxlength="40" placeholder="Nome (ex.: Zé)" class="col-span-2 sm:col-span-1 border border-gray-300 rounded-xl p-2.5 text-sm">
+              <input type="password" id="garcom-pin" required inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" placeholder="PIN" title="PIN de 4 números" class="border border-gray-300 rounded-xl p-2.5 text-sm text-center tracking-widest">
+              <button type="submit" class="bg-[var(--cor)] hover:bg-purple-900 text-white font-bold px-4 py-2.5 rounded-xl text-sm cursor-pointer whitespace-nowrap"><i class="fa-solid fa-user-plus mr-1"></i> Adicionar</button>
             </form>
-            <p class="text-[11px] text-gray-500 mt-2">Antes, crie o usuário do garçom no Supabase: Authentication → Users → Add user (e-mail + senha, marque Auto Confirm).</p>
+            <p class="text-[11px] text-gray-500 mt-2">No app das mesas, o garçom toca no próprio nome e digita o PIN. Depois de 5 PINs errados, aquele garçom fica bloqueado por 10 minutos.</p>
           </div>
         </div>
 
@@ -1470,7 +1487,7 @@
             <p class="text-xs text-gray-500">Nome, logotipo e cores que aparecem no site de pedidos e neste painel.</p>
           </div>
           <!-- prévia -->
-          <div class="rounded-2xl overflow-hidden border border-gray-200">
+          <div class="previa-loja rounded-2xl overflow-hidden border border-gray-200">
             <div class="bg-[var(--cor)] text-white p-4 flex items-center gap-3">
               <img id="previa-logo-loja" alt="" class="hidden w-14 h-14 rounded-xl object-contain bg-white/10">
               <div class="min-w-0"><p id="previa-nome-loja" class="font-black text-lg leading-tight truncate">Nome da loja</p><p id="previa-slogan-loja" class="text-xs text-white/80"></p></div>
@@ -1491,13 +1508,24 @@
                 <button type="button" onclick="removerLogo()" class="text-xs text-gray-500 hover:text-red-600 font-bold px-2 py-2 cursor-pointer">Remover logotipo</button>
               </div>
             </div>
+            <div class="bg-gray-50 border border-gray-200 rounded-xl p-3 flex items-center gap-3">
+              <div class="w-16 h-16 rounded-lg bg-white border border-gray-200 flex items-center justify-center overflow-hidden flex-shrink-0"><img id="previa-logo-notinha" alt="" class="hidden w-full h-full object-contain"><i id="icone-logo-notinha" class="fa-solid fa-receipt text-gray-300 text-xl"></i></div>
+              <div class="min-w-0 flex-1">
+                <p class="text-xs font-bold text-gray-700">Logo da notinha impressa <span class="font-normal text-gray-400">(opcional)</span></p>
+                <p class="text-[10px] text-gray-500 mb-1.5">Use a versão preta em fundo branco. Sem ela, a notinha usa o logotipo acima.</p>
+                <div class="flex items-center gap-2 flex-wrap">
+                  <label class="bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold text-xs px-3 py-1.5 rounded-lg cursor-pointer"><i class="fa-solid fa-upload mr-1"></i> Enviar<input type="file" accept="image/*" class="hidden" onchange="escolherLogoNotinha(this)"></label>
+                  <button type="button" onclick="removerLogoNotinha()" class="text-xs text-gray-500 hover:text-red-600 font-bold px-1 cursor-pointer">Remover</button>
+                </div>
+              </div>
+            </div>
             <div class="grid grid-cols-2 gap-3">
               <div><label class="block text-xs font-bold text-gray-700 mb-1">Cor principal</label><div class="flex gap-2"><input type="color" id="id-cor-primaria" oninput="$('id-cor-primaria-txt').value=this.value; previaIdentidade()" class="w-12 h-10 rounded-lg border border-gray-300 cursor-pointer"><input type="text" id="id-cor-primaria-txt" maxlength="7" oninput="sincronizarCor('id-cor-primaria-txt','id-cor-primaria')" class="flex-1 border border-gray-300 rounded-xl p-2 text-sm font-mono uppercase outline-purple-600"></div></div>
               <div><label class="block text-xs font-bold text-gray-700 mb-1">Cor de destaque</label><div class="flex gap-2"><input type="color" id="id-cor-destaque" oninput="$('id-cor-destaque-txt').value=this.value; previaIdentidade()" class="w-12 h-10 rounded-lg border border-gray-300 cursor-pointer"><input type="text" id="id-cor-destaque-txt" maxlength="7" oninput="sincronizarCor('id-cor-destaque-txt','id-cor-destaque')" class="flex-1 border border-gray-300 rounded-xl p-2 text-sm font-mono uppercase outline-purple-600"></div></div>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div><label class="block text-xs font-bold text-gray-700 mb-1">Endereço da loja (para retirada)</label><input type="text" id="id-endereco" maxlength="150" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm outline-purple-600"></div>
-              <div><label class="block text-xs font-bold text-gray-700 mb-1">Instagram</label><input type="text" id="id-instagram" maxlength="40" placeholder="@sualoja" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm outline-purple-600"></div>
+              <div><label class="block text-xs font-bold text-gray-700 mb-1">Instagram <span class="font-normal text-gray-400">(aparece no topo e no menu do site)</span></label><input type="text" id="id-instagram" maxlength="40" placeholder="@sualoja" class="w-full border border-gray-300 rounded-xl p-2.5 text-sm outline-purple-600"></div>
             </div>
             <div class="flex flex-wrap gap-2 pt-1">
               <button type="submit" id="btn-salvar-identidade" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 rounded-xl text-sm shadow cursor-pointer"><i class="fa-solid fa-floppy-disk mr-1"></i> Salvar identidade</button>
@@ -1539,8 +1567,20 @@
               </div>
             </div>
             <div class="pt-3 border-t border-gray-100 space-y-3">
-              <label class="block text-xs font-extrabold text-[var(--cor)] uppercase">Pix no site (QR Code para a sua chave)</label>
-              <p class="text-[11px] text-gray-500">O cliente paga pelo QR Code e você confirma no painel quando o dinheiro cair. Sem chave, o site não oferece Pix.</p>
+              <label class="block text-xs font-extrabold text-[var(--cor)] uppercase">Pix no site</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <label class="flex items-start gap-2.5 p-3 rounded-xl border border-gray-200 cursor-pointer has-[:checked]:border-[var(--cor)] has-[:checked]:bg-gray-50"><input type="radio" name="cfg-modo-pix" value="chave_direta" onchange="alternarModoPix()" class="mt-0.5 accent-[var(--cor)] w-4 h-4"><span><span class="block text-sm font-bold text-gray-900">Chave Pix</span><span class="block text-[11px] text-gray-500">O cliente paga e você confirma no painel quando o dinheiro cair.</span></span></label>
+                <label class="flex items-start gap-2.5 p-3 rounded-xl border border-gray-200 cursor-pointer has-[:checked]:border-[var(--cor)] has-[:checked]:bg-gray-50"><input type="radio" name="cfg-modo-pix" value="mercado_pago" onchange="alternarModoPix()" class="mt-0.5 accent-[var(--cor)] w-4 h-4"><span><span class="block text-sm font-bold text-gray-900">Mercado Pago (API)</span><span class="block text-[11px] text-gray-500">O pagamento é confirmado sozinho e o pedido vai direto para a cozinha.</span></span></label>
+              </div>
+              <div id="box-config-mp" class="hidden bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
+                <p id="mp-status" class="text-xs font-bold text-gray-600"></p>
+                <div>
+                  <label class="block text-xs font-bold text-gray-700 mb-1">Access Token de produção</label>
+                  <input type="password" id="cfg-mp-token" autocomplete="off" spellcheck="false" placeholder="APP_USR-..." class="w-full bg-white border border-gray-300 rounded-xl p-2.5 text-sm font-mono outline-purple-600">
+                  <p class="text-[10px] text-gray-500 mt-1">No Mercado Pago: Seu negócio → Configurações → Credenciais (ou mercadopago.com.br/developers → Suas integrações → Credenciais de produção). Ele fica guardado no servidor: nem o site nem este painel conseguem mostrá-lo de novo.</p>
+                </div>
+                <button type="button" id="btn-mp-desconectar" onclick="desconectarMercadoPago()" class="hidden text-[11px] font-bold text-rose-600 hover:underline cursor-pointer">Desconectar o Mercado Pago</button>
+              </div>
               <div id="box-config-chave-pix" class="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3">
                 <div>
                   <label class="block text-xs font-bold text-gray-700 mb-1">Sua Chave Pix</label>
@@ -1562,7 +1602,7 @@
       <!-- ========================================================= -->
       <!-- ABA: DESEMPENHO DOS PRODUTOS -->
       <!-- ========================================================= -->
-      <section id="aba-desempenho" class="max-w-6xl w-full mx-auto p-4 sm:p-6 hidden space-y-5">
+      <section id="aba-desempenho" class="max-w-[1400px] w-full mx-auto p-4 sm:p-6 hidden space-y-5">
         <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-3">
           <div class="flex items-center justify-between flex-wrap gap-3">
             <div>
@@ -1640,7 +1680,7 @@
       <!-- ========================================================= -->
       <!-- ABA: ANÁLISE DE RENTABILIDADE -->
       <!-- ========================================================= -->
-      <section id="aba-rentabilidade" class="max-w-6xl w-full mx-auto p-4 sm:p-6 hidden space-y-6">
+      <section id="aba-rentabilidade" class="max-w-[1400px] w-full mx-auto p-4 sm:p-6 hidden space-y-6">
         <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between flex-wrap gap-3">
           <div>
             <h2 class="text-base font-extrabold text-[var(--cor)] flex items-center gap-2"><i class="fa-solid fa-magnifying-glass-dollar"></i> Análise Avançada de Rentabilidade</h2>
@@ -2033,10 +2073,10 @@ function toast(msg, tipo) {
     ok: 'bg-emerald-600 text-white',
     erro: 'bg-rose-600 text-white',
     aviso: 'bg-amber-400 text-purple-950',
-    info: 'bg-[var(--cor-escura)] text-white'
+    info: 'bg-[#111317] text-white border border-[#232730]'
   };
   var el = document.createElement('div');
-  el.className = 'px-4 py-3 rounded-xl shadow-2xl text-xs font-bold flex items-start gap-2 ' + (cores[tipo || 'ok'] || cores.ok);
+  el.className = 'px-4 py-2.5 rounded-lg shadow-lg text-[12px] font-semibold flex items-start gap-2 ' + (cores[tipo || 'ok'] || cores.ok);
   el.innerHTML = '<span class="flex-1">' + esc(msg) + '</span><button class="opacity-70 hover:opacity-100 font-black" aria-label="Fechar">&times;</button>';
   el.querySelector('button').onclick = function () { el.remove(); };
   area.appendChild(el);
@@ -2418,9 +2458,9 @@ function mudarAba(aba) {
     sb.classList.add('-translate-x-full'); ov.classList.add('hidden');
   }
   Object.keys(TITULOS_ABAS).forEach(function (a) { var el = $('aba-' + a); if (el) el.classList.add('hidden'); });
-  document.querySelectorAll('.nav-item').forEach(function (b) { b.classList.remove('bg-[var(--cor)]', 'text-white', 'shadow'); });
+  document.querySelectorAll('.nav-item').forEach(function (b) { b.classList.remove('nav-ativo'); });
   var btn = $('nav-btn-' + aba);
-  if (btn) btn.classList.add('bg-[var(--cor)]', 'text-white', 'shadow');
+  if (btn) btn.classList.add('nav-ativo');
 
   $('titulo-pagina-atual').innerText = TITULOS_ABAS[aba][0];
   $('subtitulo-pagina-atual').innerText = TITULOS_ABAS[aba][1];
@@ -2759,8 +2799,18 @@ async function obterChavePublicaPush() {
 function nomeLojaAtual() {
   try { return (JSON.parse(localStorage.getItem('loja_marca') || '{}').nome_loja) || 'Loja'; } catch (e) { return 'Loja'; }
 }
+/* cartão "Loja aberta" do menu lateral */
+function atualizarCardStatusLoja(c) {
+  var st = $('sb-status-loja'), det = $('sb-status-detalhe');
+  if (!st || !c || c.loja_aberta === undefined) return;
+  var aberta = c.loja_aberta !== false;
+  st.className = 'inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider ' + (aberta ? 'text-emerald-400' : 'text-red-400');
+  st.innerHTML = '<span class="w-1.5 h-1.5 rounded-full ' + (aberta ? 'bg-emerald-400 animate-pulse' : 'bg-red-400') + '"></span> ' + (aberta ? 'Loja aberta' : 'Loja fechada');
+  if (det && c.entregas_ativas !== undefined) det.textContent = aberta ? (c.entregas_ativas === false ? 'Só retirada e balcão' : 'Delivery, retirada e balcão') : 'O site não aceita pedidos';
+}
 function aplicarMarcaPainel(c) {
-  var m = { nome_loja: c.nome_loja || '', slogan: c.slogan || '', logo_url: c.logo_url || '', cor_primaria: c.cor_primaria || '', cor_destaque: c.cor_destaque || '' };
+  atualizarCardStatusLoja(c);
+  var m = { nome_loja: c.nome_loja || '', slogan: c.slogan || '', logo_url: c.logo_url || '', logo_impressao_url: c.logo_impressao_url || '', cor_primaria: c.cor_primaria || '', cor_destaque: c.cor_destaque || '' };
   try { localStorage.setItem('loja_marca', JSON.stringify(m)); } catch (e) {}
   if (c.taxa_entrega !== undefined) window._taxaEntregaLoja = Number(c.taxa_entrega) || 0;
   aplicarCoresLoja(m.cor_primaria, m.cor_destaque);
@@ -2778,7 +2828,7 @@ async function carregarMarcaPainel() {
   var sb = initClient();
   if (!sb) return;
   try {
-    var r = await sb.from('configuracoes_loja').select('nome_loja, slogan, logo_url, cor_primaria, cor_destaque, taxa_entrega').eq('id', 1).maybeSingle();
+    var r = await sb.from('configuracoes_loja').select('*').eq('id', 1).maybeSingle();
     if (!r.error && r.data) aplicarMarcaPainel(r.data);
   } catch (e) { /* sem internet: fica a última marca salva */ }
 }
@@ -3267,11 +3317,7 @@ function detectarPedidosNovos() {
 
 function filtrarStatus(s) {
   statusSelecionado = s;
-  document.querySelectorAll('.btn-filtro').forEach(function (b) {
-    b.className = b.getAttribute('data-status') === s
-      ? 'btn-filtro px-3.5 py-1.5 rounded-full text-xs font-bold bg-[var(--cor)] text-white cursor-pointer whitespace-nowrap'
-      : 'btn-filtro px-3.5 py-1.5 rounded-full text-xs font-bold bg-white text-gray-700 border hover:bg-gray-50 cursor-pointer whitespace-nowrap';
-  });
+  document.querySelectorAll('.btn-filtro').forEach(function (b) { b.classList.toggle('sel', b.getAttribute('data-status') === s); });
   renderizarPedidos();
 }
 
@@ -3289,13 +3335,13 @@ function rotulosEtapas(p) {
 }
 
 function classeBadgeStatus(status) {
-  if (STATUS_AGUARDANDO.indexOf(status) !== -1) return 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse font-black';
-  if (status === 'Aguardando Pagamento Pix') return 'bg-blue-100 text-blue-800 border-blue-200';
-  if (status === 'Em preparo') return 'bg-purple-100 text-purple-800 border-purple-200 font-bold';
-  if (status === 'Saiu para entrega') return 'bg-indigo-100 text-indigo-800 border-indigo-200';
-  if (status === 'Concluído') return 'bg-green-100 text-green-800 border-green-200';
-  if (status === 'Recusado' || status === 'Cancelado') return 'bg-rose-100 text-rose-800 border-rose-200';
-  return 'bg-gray-100 text-gray-700 border-gray-200';
+  if (STATUS_AGUARDANDO.indexOf(status) !== -1) return 'bg-[#FEF3C7] text-[#B45309] border-amber-200 animate-pulse';
+  if (status === 'Aguardando Pagamento Pix') return 'bg-[#DBEAFE] text-[#1D4ED8] border-blue-200';
+  if (status === 'Em preparo') return 'bg-amber-50 text-[#A8843E] border-[#C5A059]/40';
+  if (status === 'Saiu para entrega') return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+  if (status === 'Concluído') return 'bg-[#DCFCE7] text-[#15803D] border-emerald-200';
+  if (status === 'Recusado' || status === 'Cancelado') return 'bg-[#FEE2E2] text-[#B91C1C] border-red-200';
+  return 'bg-slate-100 text-slate-700 border-slate-200';
 }
 
 function renderizarPedidos() {
@@ -3310,57 +3356,97 @@ function renderizarPedidos() {
   if (pendentes > 0) iniciarAlarmeSonoro(); else pararAlarmeSonoro();
   try { if (navigator.setAppBadge) { pendentes ? navigator.setAppBadge(pendentes) : navigator.clearAppBadge(); } } catch (e) {}
 
-  var filtrados = statusSelecionado === 'Todos' ? listaGlobalPedidos
-    : listaGlobalPedidos.filter(function (p) {
-      if (statusSelecionado === 'Aguardando Aceite da Loja') return STATUS_AGUARDANDO.indexOf(p.status) !== -1;
-      return p.status === statusSelecionado;
-    });
+  var naEtapa = function (p, s) {
+    if (s === 'Todos') return true;
+    if (s === 'Aguardando Aceite da Loja') return STATUS_AGUARDANDO.indexOf(p.status) !== -1;
+    return p.status === s;
+  };
+  // contagem em cada filtro
+  document.querySelectorAll('.btn-filtro').forEach(function (b) {
+    var c = b.querySelector('.contagem'), s = b.getAttribute('data-status');
+    if (c) c.textContent = listaGlobalPedidos.filter(function (p) { return naEtapa(p, s); }).length;
+  });
+  var busca = (($('busca-pedidos') || {}).value || '').trim().toLowerCase().replace(/^#/, '');
+  var filtrados = listaGlobalPedidos.filter(function (p) {
+    if (!naEtapa(p, statusSelecionado)) return false;
+    if (!busca) return true;
+    var texto = [p.id, p.cliente_nome, p.mesa ? 'mesa ' + p.mesa : ''].concat(itensDoPedido(p).map(function (i) { return i.nome; })).join(' ').toLowerCase();
+    return texto.indexOf(busca) !== -1;
+  });
   if (!filtrados.length) {
-    container.innerHTML = '<div class="col-span-full bg-white p-8 rounded-xl shadow-sm text-center text-gray-400 text-sm">Nenhum pedido nesta categoria hoje.</div>';
+    container.innerHTML = '<div class="col-span-full bg-white border border-[#E2E5EC] rounded-lg p-8 text-center text-slate-500 text-[12.5px]">' + (busca ? 'Nenhum pedido encontrado para "' + esc(busca) + '".' : 'Nenhum pedido nesta categoria hoje.') + '</div>';
     return;
   }
+
+  var ICO = function (d) { return '<svg class="ico w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
+  var I_COMANDA = ICO('<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>');
+  var I_CUPOM = ICO('<path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/>');
+  var I_LIXO = ICO('<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>');
+  var I_TEL = '<svg class="ico w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>';
+  var I_PINO = '<svg class="ico w-3 h-3 text-slate-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>';
+  var btnIcone = function (acao, titulo, icone, cor, dis) {
+    return '<button' + (dis || '') + ' onclick="' + acao + '" title="' + titulo + '" class="p-1.5 rounded bg-[#F4F5F7] text-slate-600 border border-[#E2E5EC] cursor-pointer ' + cor + '">' + icone + '</button>';
+  };
 
   var inicioHoje = inicioDoDia(new Date()).getTime();
   container.innerHTML = filtrados.map(function (p) {
     var criado = p.created_at ? new Date(p.created_at) : null;
     var hora = criado ? (criado.getTime() < inicioHoje ? formatarDataHora(p.created_at) : criado.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })) : '';
     var itensHtml = itensDoPedido(p).map(function (i) {
-      return '<div class="text-xs py-1 border-b border-gray-50"><span class="font-bold text-gray-900">' + esc(i.quantidade || 1) + 'x ' + esc(i.nome) + '</span>' + htmlDetalhesItem(i) + '</div>';
+      var q = Number(i.quantidade) || 1, pu = Number(i.preco_unitario);
+      return '<div class="py-1 first:pt-0 last:pb-0"><div class="flex items-start justify-between gap-2 text-[12px] font-medium text-slate-800"><span>' + esc(q) + 'x ' + esc(i.nome) + '</span>' +
+        (pu ? '<span class="tabular-nums text-slate-600 whitespace-nowrap">' + brl(pu * q) + '</span>' : '') + '</div>' + htmlDetalhesItem(i) + '</div>';
     }).join('');
     var tipoTxt = rotuloTipoPedido(p);
-    var corTipo = p.tipo_recebimento === 'Mesa' ? 'bg-amber-100 text-amber-800' : p.tipo_recebimento === 'Balcão' ? 'bg-sky-100 text-sky-800' : tipoTxt === 'Retirada' ? 'bg-gray-100 text-gray-700' : 'bg-indigo-100 text-indigo-800';
 
     var aguardando = STATUS_AGUARDANDO.indexOf(p.status) !== -1;
     var ocupado = !!_pedidosEmProcessamento[p.id];
     var dis = ocupado ? ' disabled style="opacity:.5"' : '';
     var botoes;
     if (aguardando) {
-      botoes = '<div class="grid grid-cols-2 gap-2"><button' + dis + ' onclick="aceitarPedido(' + Number(p.id) + ')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs py-2 rounded-lg shadow transition active:scale-95 flex items-center justify-center gap-1 cursor-pointer"><i class="fa-solid fa-check"></i> Aceitar Pedido</button><button' + dis + ' onclick="recusarPedido(' + Number(p.id) + ')" class="bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold text-xs py-2 rounded-lg border border-rose-200 transition active:scale-95 cursor-pointer"><i class="fa-solid fa-xmark"></i> Recusar</button></div>';
+      botoes = '<div class="grid grid-cols-3 gap-1.5"><button' + dis + ' onclick="aceitarPedido(' + Number(p.id) + ')" class="col-span-2 py-2 rounded-md bg-[#15803D] hover:bg-emerald-800 text-white text-[12.5px] font-bold transition-colors active:scale-95 cursor-pointer">Aceitar pedido</button><button' + dis + ' onclick="recusarPedido(' + Number(p.id) + ')" class="py-2 rounded-md bg-white hover:bg-red-50 text-[#B91C1C] border border-red-200 text-[12px] font-semibold transition-colors cursor-pointer">Recusar</button></div>';
     } else if (p.status === 'Aguardando Pagamento Pix') {
-      botoes = '<div class="space-y-1.5"><div class="text-center py-1 text-xs text-blue-700 font-semibold bg-blue-50 rounded-lg border border-blue-100">Aguardando pagamento Pix...</div><button' + dis + ' onclick="confirmarPixManual(' + Number(p.id) + ')" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold py-1.5 rounded-lg transition cursor-pointer">Confirmar Pix Manualmente & Preparar</button></div>';
+      botoes = '<div class="space-y-1.5"><div class="text-center py-1.5 text-[11.5px] text-[#1D4ED8] font-semibold bg-[#DBEAFE]/60 rounded-md border border-blue-200">Aguardando pagamento Pix...</div><button' + dis + ' onclick="confirmarPixManual(' + Number(p.id) + ')" class="w-full py-1.5 rounded-md bg-white hover:bg-emerald-50 text-[#15803D] border border-emerald-200 text-[11.5px] font-semibold transition-colors cursor-pointer">Confirmar Pix manualmente e preparar</button></div>';
     } else if (p.status === 'Concluído' || p.status === 'Recusado' || p.status === 'Cancelado') {
-      botoes = '<div class="text-center text-[11px] text-gray-400 font-semibold py-1">Pedido finalizado</div>';
+      botoes = '<div class="text-center text-[11.5px] text-slate-400 font-medium py-1">Pedido finalizado</div>';
     } else {
-      botoes = '<div class="grid grid-cols-3 gap-1.5">' +
-        ['Em preparo|Preparo|purple', 'Saiu para entrega|' + rotulosEtapas(p)[0] + '|indigo', 'Concluído|' + rotulosEtapas(p)[1] + '|green'].map(function (s) {
-          var partes = s.split('|'), ativo = p.status === partes[0];
-          return '<button' + dis + ' onclick="mudarStatus(' + Number(p.id) + ', \'' + partes[0] + '\')" class="bg-' + partes[2] + '-50 hover:bg-' + partes[2] + '-100 text-' + partes[2] + '-700 text-[11px] font-bold py-1.5 rounded-lg border border-' + partes[2] + '-200 transition active:scale-95 cursor-pointer' + (ativo ? ' ring-2 ring-' + partes[2] + '-400' : '') + '">' + partes[1] + '</button>';
-        }).join('') + '</div>';
+      var et = rotulosEtapas(p);
+      var etapas = [
+        ['Em preparo', 'Preparo', 'bg-[#111317] text-white border-[#111317]', 'bg-white hover:bg-slate-50 text-slate-700 border-[#E2E5EC]'],
+        ['Saiu para entrega', et[0], 'bg-[#DBEAFE] text-[#1D4ED8] border-blue-300', 'bg-indigo-50/50 hover:bg-indigo-100/70 text-indigo-800 border-indigo-200/80'],
+        ['Concluído', et[1], 'bg-[#15803D] text-white border-[#15803D]', 'bg-[#DCFCE7]/60 hover:bg-[#DCFCE7] text-[#15803D] border-emerald-200']
+      ];
+      botoes = '<div class="grid grid-cols-3 gap-1.5">' + etapas.map(function (e) {
+        return '<button' + dis + ' onclick="mudarStatus(' + Number(p.id) + ', \'' + e[0] + '\')" class="py-1.5 px-2 rounded text-[11px] font-semibold border transition-colors active:scale-95 cursor-pointer ' + (p.status === e[0] ? e[2] : e[3]) + '">' + esc(e[1]) + '</button>';
+      }).join('') + '</div>';
     }
 
     var tel = telefoneDoPedido(p);
     var linkTel = linkWhatsApp(tel);
-    var contato = tel ? '<p class="text-xs text-gray-600 mb-1 flex items-center gap-1"><i class="fa-brands fa-whatsapp text-emerald-600"></i>' + (linkTel ? '<a href="' + esc(linkTel) + '" target="_blank" rel="noopener" class="hover:underline">' + esc(tel) + '</a>' : esc(tel)) + '</p>' : '';
+    var contato = tel ? '<p class="text-[11.5px] text-slate-500 flex items-center gap-1.5 mt-0.5 tabular-nums">' + I_TEL + (linkTel ? '<a href="' + esc(linkTel) + '" target="_blank" rel="noopener" class="hover:underline">' + esc(tel) + '</a>' : esc(tel)) + '</p>' : '';
 
-    return '<div class="bg-white rounded-2xl p-4 shadow-sm border ' + (aguardando ? 'border-amber-400 ring-2 ring-amber-300' : 'border-gray-200') + ' flex flex-col justify-between"><div>' +
-      '<div class="flex justify-between items-start mb-2 gap-2"><div class="min-w-0"><span class="text-xs font-black bg-purple-100 text-purple-900 px-2 py-0.5 rounded-md">#' + esc(p.id) + '</span><span class="text-[10px] font-black ml-1.5 px-1.5 py-0.5 rounded ' + corTipo + '">' + esc(tipoTxt.toUpperCase()) + '</span><span class="text-[11px] text-gray-400 ml-1.5">' + esc(hora) + '</span><h3 class="font-extrabold text-gray-900 text-base leading-tight mt-1 break-words">' + esc(p.cliente_nome || 'Cliente') + '</h3></div>' +
-      '<div class="flex items-center gap-1.5 flex-shrink-0"><button onclick="imprimirComanda(' + Number(p.id) + ')" title="Comanda da cozinha" class="bg-amber-50 hover:bg-amber-100 text-amber-800 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer"><i class="fa-solid fa-fire-burner"></i></button><button onclick="imprimirPedido(' + Number(p.id) + ')" title="Cupom do cliente" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer"><i class="fa-solid fa-print"></i></button>' +
-      '<button' + dis + ' onclick="excluirPedido(' + Number(p.id) + ')" title="Excluir pedido" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer"><i class="fa-solid fa-trash"></i></button><span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border ' + classeBadgeStatus(p.status) + '">' + esc(p.status || '-') + '</span></div></div>' +
-      contato +
-      '<p class="text-xs text-gray-600 mb-2 flex items-start gap-1"><i class="fa-solid fa-location-dot mt-0.5 text-gray-400"></i><span class="break-words">' + esc(p.cliente_endereco || 'Não informado') + '</span></p>' +
-      '<div class="bg-gray-50 p-2.5 rounded-xl my-2 max-h-36 overflow-y-auto">' + (itensHtml || '<p class="text-xs text-gray-400">Sem itens</p>') + '</div>' +
-      (p.observacoes ? '<p class="text-xs text-red-600 bg-red-50 p-2 rounded-lg font-medium mb-2 break-words">Obs: ' + esc(p.observacoes) + '</p>' : '') +
-      '</div><div class="pt-3 border-t mt-2"><div class="flex justify-between items-center mb-3"><span class="text-xs text-gray-500">Pagamento: <strong>' + esc(p.forma_pagamento || '-') + '</strong></span><span class="text-base font-black text-[var(--cor)]">' + brl(p.total) + '</span></div>' + botoes + '</div></div>';
+    return '<div class="bg-white rounded-lg p-4 border flex flex-col justify-between gap-3.5 transition-colors ' + (aguardando ? 'border-amber-300 ring-2 ring-amber-200/70' : 'border-[#E2E5EC] hover:border-slate-300') + '">' +
+      '<div class="space-y-2.5">' +
+        '<div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100">' +
+          '<div class="flex items-center gap-1.5 flex-wrap"><span class="font-bold text-slate-900 text-[13px] tabular-nums">#' + esc(p.id) + '</span>' +
+            '<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#F4F5F7] border border-[#E2E5EC] text-slate-700">' + esc(tipoTxt) + '</span>' +
+            '<span class="text-[11px] text-slate-400 tabular-nums">' + esc(hora) + '</span></div>' +
+          '<div class="flex items-center gap-1">' +
+            btnIcone('imprimirComanda(' + Number(p.id) + ')', 'Comanda da cozinha', I_COMANDA, 'hover:bg-amber-50 hover:text-[#A8843E]') +
+            btnIcone('imprimirPedido(' + Number(p.id) + ')', 'Cupom do cliente', I_CUPOM, 'hover:bg-slate-200/70 hover:text-slate-900') +
+            btnIcone('excluirPedido(' + Number(p.id) + ')', 'Excluir pedido', I_LIXO, 'hover:bg-red-50 hover:text-[#B91C1C]', dis) +
+            '<span class="ml-1 text-[10.5px] font-bold px-2 py-0.5 rounded border ' + classeBadgeStatus(p.status) + '">' + esc(p.status || '-') + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div><p class="text-[14px] font-bold text-slate-900 break-words">' + esc(p.cliente_nome || 'Cliente') + '</p>' + contato +
+          '<p class="text-[11.5px] text-slate-500 flex items-start gap-1.5 mt-0.5">' + I_PINO + '<span class="break-words">' + esc(p.cliente_endereco || 'Não informado') + '</span></p></div>' +
+        '<div class="bg-[#F4F5F7]/80 border border-[#E2E5EC] rounded-md p-2.5 max-h-48 overflow-y-auto">' + (itensHtml || '<p class="text-[12px] text-slate-400">Sem itens</p>') + '</div>' +
+        (p.observacoes ? '<p class="text-[12px] text-[#B91C1C] bg-[#FEE2E2]/60 border border-red-200 px-2.5 py-1.5 rounded-md font-semibold break-words">Obs: ' + esc(p.observacoes) + '</p>' : '') +
+      '</div>' +
+      '<div class="space-y-2.5 pt-2 border-t border-slate-100">' +
+        '<div class="flex items-center justify-between"><span class="text-[12px] text-slate-600">Pagamento: <strong class="text-slate-800">' + esc(p.forma_pagamento || '-') + '</strong></span><span class="text-[15px] font-bold text-slate-900 tabular-nums">' + brl(p.total) + '</span></div>' +
+        botoes +
+      '</div></div>';
   }).join('');
 }
 
@@ -4067,7 +4153,7 @@ function sincronizarCor(origem, destino) {
   previaIdentidade();
 }
 function previaIdentidade() {
-  aplicarCoresLoja($('id-cor-primaria').value, $('id-cor-destaque').value);
+  aplicarCoresLoja($('id-cor-primaria').value, $('id-cor-destaque').value); // pinta só a prévia; o painel fica grafite
   var nome = $('id-nome').value.trim() || 'Nome da loja';
   $('previa-nome-loja').textContent = nome;
   $('previa-slogan-loja').textContent = $('id-slogan').value.trim();
@@ -4088,6 +4174,22 @@ async function escolherLogo(input) {
   toast('Logotipo enviado. Toque em "Salvar identidade" para usar.', 'info');
 }
 function removerLogo() { _logoAtualUrl = ''; previaIdentidade(); }
+var _logoNotinhaUrl = '';
+function previaLogoNotinha() {
+  $('previa-logo-notinha').classList.toggle('hidden', !_logoNotinhaUrl);
+  $('icone-logo-notinha').classList.toggle('hidden', !!_logoNotinhaUrl);
+  if (_logoNotinhaUrl) $('previa-logo-notinha').src = _logoNotinhaUrl;
+}
+async function escolherLogoNotinha(input) {
+  var arq = input.files && input.files[0];
+  if (!arq) return;
+  var url = await enviarImagemLoja(arq, 'logo-notinha');
+  input.value = '';
+  if (!url) return;
+  _logoNotinhaUrl = url; previaLogoNotinha();
+  toast('Logo da notinha enviado. Toque em "Salvar identidade" para usar.', 'info');
+}
+function removerLogoNotinha() { _logoNotinhaUrl = ''; previaLogoNotinha(); }
 
 function preencherIdentidade(cfg) {
   $('id-nome').value = cfg.nome_loja || '';
@@ -4099,6 +4201,8 @@ function preencherIdentidade(cfg) {
   $('id-cor-destaque').value = cfg.cor_destaque || '#FBBF24';
   $('id-cor-destaque-txt').value = $('id-cor-destaque').value;
   _logoAtualUrl = cfg.logo_url || '';
+  _logoNotinhaUrl = cfg.logo_impressao_url || '';
+  previaLogoNotinha();
   previaIdentidade();
 }
 
@@ -4112,7 +4216,8 @@ async function salvarIdentidade(e) {
     var dados = {
       id: 1, nome_loja: nome, slogan: $('id-slogan').value.trim(), logo_url: _logoAtualUrl || null,
       cor_primaria: $('id-cor-primaria').value, cor_destaque: $('id-cor-destaque').value,
-      endereco_loja: $('id-endereco').value.trim(), instagram: $('id-instagram').value.trim().replace(/^@/, '')
+      endereco_loja: $('id-endereco').value.trim(), instagram: $('id-instagram').value.trim().replace(/^@/, '').replace(/^https?:\/\/(www\.)?instagram\.com\//i, '').replace(/[\/?#].*$/, ''),
+      logo_impressao_url: _logoNotinhaUrl || null
     };
     var res = await initClient().from('configuracoes_loja').upsert(dados);
     if (res.error) { mostrarErro('Erro ao salvar a identidade', res.error); return; }
@@ -4183,7 +4288,7 @@ async function baixarPacoteIcones() {
     var enc = new TextEncoder();
     var i192 = await desenharIcone(192, img, cor, iniciais, 0.08), i512 = await desenharIcone(512, img, cor, iniciais, 0.08), m512 = await desenharIcone(512, img, cor, iniciais, 0.2);
     var curto = nome.length > 14 ? nome.slice(0, 14).trim() : nome;
-    var manSite = { name: nome, short_name: curto, start_url: './', scope: './', display: 'standalone', background_color: '#ffffff', theme_color: cor,
+    var manSite = { name: nome, short_name: curto, start_url: './', scope: './', display: 'standalone', background_color: cor, theme_color: cor,
       icons: [{ src: 'icone-192.png', sizes: '192x192', type: 'image/png' }, { src: 'icone-512.png', sizes: '512x512', type: 'image/png' }, { src: 'icone-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }] };
     var manAdm = { id: './admin.html', name: 'Painel ' + nome, short_name: 'Painel', start_url: './admin.html', scope: './admin.html', display: 'standalone', background_color: cor, theme_color: cor,
       icons: [{ src: 'admin-icone-192.png', sizes: '192x192', type: 'image/png' }, { src: 'admin-icone-512.png', sizes: '512x512', type: 'image/png' }, { src: 'admin-icone-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }] };
@@ -4228,7 +4333,38 @@ async function carregarConfiguracoesLoja() {
   $('cfg-nome-pix').value = cfg.nome_recebedor_pix || '';
   $('cfg-cidade-pix').value = cfg.cidade_pix || '';
   $('cfg-loja-aberta').checked = cfg.loja_aberta !== false;
+  var modo = cfg.modo_pix === 'mercado_pago' ? 'mercado_pago' : 'chave_direta';
+  document.querySelectorAll('input[name="cfg-modo-pix"]').forEach(function (r) { r.checked = r.value === modo; });
+  $('cfg-mp-token').value = '';
+  alternarModoPix();
+  carregarStatusMercadoPago();
   atualizarTextoToggleStatus();
+}
+
+/* ---- Pix: chave da loja ou Mercado Pago (API) ---- */
+var _mpStatus = { configurado: false };
+function modoPixEscolhido() { var r = document.querySelector('input[name="cfg-modo-pix"]:checked'); return r ? r.value : 'chave_direta'; }
+function alternarModoPix() {
+  var mp = modoPixEscolhido() === 'mercado_pago';
+  $('box-config-mp').classList.toggle('hidden', !mp);
+  $('box-config-chave-pix').classList.toggle('hidden', mp);
+}
+async function carregarStatusMercadoPago() {
+  var r = await initClient().rpc('pagamento_mp_status');
+  if (r.error) { $('mp-status').innerHTML = '<span class="text-rose-600">Rode o instalar.sql novo no Supabase para usar o Mercado Pago.</span>'; return; }
+  _mpStatus = r.data || { configurado: false };
+  $('mp-status').innerHTML = _mpStatus.configurado
+    ? '<i class="fa-solid fa-circle-check text-emerald-600 mr-1"></i> Conectado (token terminando em ' + esc(_mpStatus.final || '') + '). Para trocar, cole um novo abaixo.'
+    : '<i class="fa-solid fa-circle-exclamation text-amber-500 mr-1"></i> Ainda não conectado. Cole o Access Token abaixo e salve.';
+  $('btn-mp-desconectar').classList.toggle('hidden', !_mpStatus.configurado);
+}
+async function desconectarMercadoPago() {
+  if (!confirm('Desconectar o Mercado Pago? O site volta a usar a chave Pix (se houver).')) return;
+  if (!(await confirmarSenhaAtual('Confirme sua senha para desconectar o Mercado Pago.'))) return;
+  var r = await initClient().rpc('pagamento_mp_salvar', { p_token: '' });
+  if (r.error) { mostrarErro('Erro ao desconectar', r.error); return; }
+  toast('Mercado Pago desconectado.', 'info');
+  carregarConfiguracoesLoja();
 }
 
 async function salvarConfiguracoesLoja(e) {
@@ -4236,7 +4372,12 @@ async function salvarConfiguracoesLoja(e) {
   var btn = $('btn-salvar-config');
   var whatsapp = somenteDigitos($('cfg-whatsapp').value);
   var chave = $('cfg-chave-pix').value.trim();
+  var modo = modoPixEscolhido();
+  var tokenMp = $('cfg-mp-token').value.trim();
   if (whatsapp.length < 12) { toast('WhatsApp deve ter 55 + DDD + número (ex: 5516999990000).', 'aviso'); return; }
+  if (modo === 'mercado_pago' && !tokenMp && !_mpStatus.configurado) { toast('Cole o Access Token do Mercado Pago para usar o Pix automático.', 'aviso'); return; }
+  if (tokenMp && !/^(APP_USR|TEST)-[A-Za-z0-9-]{20,}$/.test(tokenMp)) { toast('Esse não parece um Access Token do Mercado Pago. Ele começa com APP_USR-', 'aviso'); return; }
+  if (tokenMp && !(await confirmarSenhaAtual('Você está conectando o Mercado Pago (onde o dinheiro cai). Confirme sua senha.'))) return;
 
   // Mudança na chave Pix exige senha (é onde o dinheiro cai)
   var atual = await initClient().from('configuracoes_loja').select('chave_pix').eq('id', 1).maybeSingle();
@@ -4247,11 +4388,18 @@ async function salvarConfiguracoesLoja(e) {
   try {
     var res = await initClient().from('configuracoes_loja').upsert({
       id: 1, whatsapp: whatsapp, taxa_entrega: arred(parseFloat($('cfg-taxa').value) || 0),
-      loja_aberta: $('cfg-loja-aberta').checked, modo_pix: 'chave_direta', chave_pix: chave,
+      loja_aberta: $('cfg-loja-aberta').checked, modo_pix: modo, chave_pix: chave,
       nome_recebedor_pix: $('cfg-nome-pix').value.trim(), cidade_pix: $('cfg-cidade-pix').value.trim()
     });
     if (res.error) { mostrarErro('Erro ao salvar configurações', res.error); return; }
-    toast('✓ Configurações e status da loja salvos!' + (chave ? '' : ' (Sem chave Pix, o site não oferece Pix.)'), 'ok');
+    if (modo === 'mercado_pago' && tokenMp) {
+      var m = await initClient().rpc('pagamento_mp_salvar', { p_token: tokenMp });
+      if (m.error) { mostrarErro('Erro ao salvar o Access Token', m.error); return; }
+      $('cfg-mp-token').value = '';
+      carregarStatusMercadoPago();
+    }
+    atualizarCardStatusLoja({ loja_aberta: $('cfg-loja-aberta').checked });
+    toast('✓ Configurações e status da loja salvos!' + (modo === 'mercado_pago' ? ' Pix pelo Mercado Pago ativo.' : chave ? '' : ' (Sem chave Pix, o site não oferece Pix.)'), 'ok');
   } finally { setBotaoCarregando(btn, false); }
 }
 
@@ -4604,7 +4752,7 @@ function salvarConfigImpressora() {
 var _logoImpressao = null;
 function prepararLogoImpressao(forcar) {
   var url = '';
-  try { url = (JSON.parse(localStorage.getItem('loja_marca') || '{}').logo_url) || ''; } catch (e) {}
+  try { var mm = JSON.parse(localStorage.getItem('loja_marca') || '{}'); url = mm.logo_impressao_url || mm.logo_url || ''; } catch (e) {}
   if (!url) { _logoImpressao = null; return Promise.resolve(null); }
   try {
     var guardado = JSON.parse(localStorage.getItem('loja_logo_impressao') || 'null');
@@ -4728,7 +4876,7 @@ async function carregarCardMesas() {
   var sb = initClient();
   var r = await Promise.all([
     sb.from('configuracoes_loja').select('mesas_ativo, qtd_mesas, qrcode_mesa_ativo, taxa_servico_ativa, taxa_servico_pct, url_site').eq('id', 1).maybeSingle(),
-    sb.from('equipe').select('*').order('nome')
+    sb.from('garcons').select('id, nome, ativo, bloqueado_ate').eq('ativo', true).order('nome')
   ]);
   if (r[0].error) { $('box-mesas').innerHTML = '<p class="text-xs text-rose-600">Rode o instalar.sql novo no Supabase para usar as mesas.</p>'; return; }
   _mesasCfg = r[0].data || {};
@@ -4774,34 +4922,55 @@ async function salvarConfigMesas(e) {
 }
 
 function renderizarEquipe() {
-  var ativos = _listaEquipe.filter(function (g) { return g.ativo !== false; });
-  $('lista-equipe').innerHTML = ativos.length ? ativos.map(function (g) {
-    return '<div class="flex items-center justify-between py-2 border-b border-gray-100"><div><p class="text-sm font-bold">' + esc(g.nome) + '</p><p class="text-[11px] text-gray-500">' + esc(g.email || '') + '</p></div>' +
-      '<button onclick="removerGarcom(\'' + esc(g.user_id) + '\')" class="text-xs text-gray-400 hover:text-rose-600 font-bold px-2 py-1 cursor-pointer"><i class="fa-solid fa-user-minus"></i> Remover</button></div>';
-  }).join('') : '<p class="text-xs text-gray-400 py-2">Nenhum garçom cadastrado. O dono também pode usar o app das mesas com o próprio login.</p>';
+  var lista = _listaEquipe;
+  $('lista-equipe').innerHTML = lista.length ? lista.map(function (g) {
+    var bloqueado = g.bloqueado_ate && new Date(g.bloqueado_ate).getTime() > Date.now();
+    return '<div class="flex items-center justify-between gap-2 py-2 border-b border-gray-100">' +
+      '<div class="flex items-center gap-2.5 min-w-0"><span class="w-8 h-8 rounded-full bg-gray-100 text-gray-700 text-xs font-black flex items-center justify-center flex-shrink-0">' + esc(String(g.nome).charAt(0).toUpperCase()) + '</span>' +
+      '<div class="min-w-0"><p class="text-sm font-bold truncate">' + esc(g.nome) + '</p><p class="text-[11px] ' + (bloqueado ? 'text-rose-600 font-bold' : 'text-gray-400') + '">' + (bloqueado ? 'Bloqueado por PIN errado (troque o PIN para liberar)' : 'PIN de 4 números') + '</p></div></div>' +
+      '<div class="flex items-center gap-1 flex-shrink-0">' +
+      '<button onclick="trocarPinGarcom(' + Number(g.id) + ')" class="text-xs text-gray-500 hover:text-gray-900 font-bold px-2 py-1 cursor-pointer"><i class="fa-solid fa-key"></i> Trocar PIN</button>' +
+      '<button onclick="removerGarcom(' + Number(g.id) + ')" class="text-xs text-gray-400 hover:text-rose-600 font-bold px-2 py-1 cursor-pointer"><i class="fa-solid fa-user-minus"></i> Remover</button></div></div>';
+  }).join('') : '<p class="text-xs text-gray-400 py-2">Nenhum garçom cadastrado ainda.</p>';
+}
+
+function erroGarcom(m) {
+  m = m || '';
+  return /PIN_INVALIDO/.test(m) ? 'O PIN precisa ter exatamente 4 números.'
+    : /NOME_REPETIDO/.test(m) ? 'Já existe um garçom com esse nome. Use um apelido diferente.'
+    : /garcom_salvar|function/.test(m) ? 'Rode o instalar.sql novo no Supabase para cadastrar garçons com PIN.' : 'Erro: ' + m;
 }
 
 async function adicionarGarcom(e) {
   e.preventDefault();
-  var email = $('garcom-email').value.trim(), nome = $('garcom-nome').value.trim();
-  var r = await initClient().rpc('equipe_adicionar', { p_email: email, p_nome: nome });
-  if (r.error) {
-    var m = r.error.message || '';
-    toast(/USUARIO_NAO_ENCONTRADO/.test(m) ? 'Esse e-mail ainda não tem usuário. No Supabase: Authentication → Users → Add user → Create new user (marque Auto Confirm). Depois adicione aqui.'
-      : /JA_E_ADMIN/.test(m) ? 'Esse e-mail já é administrador: ele já pode usar o app das mesas.' : 'Erro: ' + m, 'aviso');
-    return;
-  }
+  var nome = $('garcom-nome').value.trim(), pin = $('garcom-pin').value.trim();
+  if (!/^\d{4}$/.test(pin)) { toast('O PIN precisa ter exatamente 4 números.', 'aviso'); return; }
+  var r = await initClient().rpc('garcom_salvar', { p_id: null, p_nome: nome, p_pin: pin });
+  if (r.error) { toast(erroGarcom(r.error.message), 'aviso'); return; }
   $('form-garcom').reset();
-  toast('✓ ' + (nome || email) + ' já pode entrar no app das mesas.', 'ok');
+  toast('✓ ' + nome + ' já pode entrar no app das mesas com o PIN.', 'ok');
+  carregarCardMesas();
+}
+
+async function trocarPinGarcom(id) {
+  var g = _listaEquipe.find(function (x) { return x.id === id; });
+  if (!g) return;
+  var pin = prompt('Novo PIN de 4 números para ' + g.nome + ':');
+  if (pin === null) return;
+  pin = pin.trim();
+  if (!/^\d{4}$/.test(pin)) { toast('O PIN precisa ter exatamente 4 números.', 'aviso'); return; }
+  var r = await initClient().rpc('garcom_salvar', { p_id: id, p_nome: g.nome, p_pin: pin });
+  if (r.error) { toast(erroGarcom(r.error.message), 'aviso'); return; }
+  toast('✓ PIN de ' + g.nome + ' trocado. Ele precisa entrar de novo no app.', 'ok');
   carregarCardMesas();
 }
 
 async function removerGarcom(id) {
-  var g = _listaEquipe.find(function (x) { return x.user_id === id; });
-  if (!g || !confirm('Remover ' + g.nome + ' da equipe? Ele não vai mais conseguir entrar no app das mesas.')) return;
-  var r = await initClient().from('equipe').update({ ativo: false }).eq('user_id', id);
+  var g = _listaEquipe.find(function (x) { return x.id === id; });
+  if (!g || !confirm('Remover ' + g.nome + '? Ele sai do app das mesas na hora.')) return;
+  var r = await initClient().rpc('garcom_remover', { p_id: id });
   if (r.error) { mostrarErro('Erro ao remover', r.error); return; }
-  toast(g.nome + ' removido da equipe.', 'info');
+  toast(g.nome + ' removido.', 'info');
   carregarCardMesas();
 }
 

@@ -1,5 +1,5 @@
 /* APP DO GARÇOM — permite instalar; sempre busca a versão nova (sem cache de dados) */
-const VERSAO = 'loja-garcom-v1';
+const VERSAO = 'loja-garcom-v2';
 self.addEventListener('install', (e) => { e.waitUntil(caches.open(VERSAO).then((c) => c.addAll(['./garcom.html', './config.js']).catch(() => {})).then(() => self.skipWaiting())); });
 self.addEventListener('activate', (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k.startsWith('loja-garcom-') && k !== VERSAO).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', (e) => {
