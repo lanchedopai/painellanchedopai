@@ -180,6 +180,8 @@
     .aba-canal.pisca { color: #B91C1C !important; border-radius: 6px 6px 0 0; animation: piscaVermelho 1s ease-in-out infinite; }
     .aba-canal.pisca .contagem { background: #DC2626 !important; color: #fff !important; }
     .nav-item.pisca { animation: piscaMenu 1s ease-in-out infinite; color: #fff; }
+    #lista-pedidos-admin.quadro-mesas { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+    .tile-mesa { min-height: 170px; }
     .btn-filtro.sel .contagem { background: rgba(197, 160, 89, .25); color: var(--champ); border-color: transparent; }
   </style>
   <link rel="manifest" href="manifest-admin.json">
@@ -463,6 +465,12 @@
         </div>
         <div id="barra-filtros" class="flex flex-wrap items-center gap-1.5 bg-white p-2 rounded-lg border border-[#E2E5EC]">
           <button onclick="filtrarStatus('Todos')" class="btn-filtro sel" data-status="Todos"><span>Todos (hoje)</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Aguardando Aceite da Loja')" class="btn-filtro" data-status="Aguardando Aceite da Loja"><span>Novos (aguardando aceite)</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Aguardando Pagamento Pix')" class="btn-filtro" data-status="Aguardando Pagamento Pix"><span>Aguardando Pix</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Em preparo')" class="btn-filtro" data-status="Em preparo"><span>Em preparação</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Saiu para entrega')" class="btn-filtro" data-status="Saiu para entrega"><span>Prontos / a caminho</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Concluído')" class="btn-filtro" data-status="Concluído"><span>Concluídos</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Recusado')" class="btn-filtro" data-status="Recusado"><span>Recusados</span><span class="contagem">0</span></button>
+        </div>
+        <div id="modal-mesa-detalhe" class="hidden fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-[1px] flex items-start sm:items-center justify-center p-3 overflow-y-auto" onclick="if (event.target === this) fecharDetalheMesa()">
+          <div class="w-full max-w-lg my-6">
+            <div class="flex justify-end mb-2"><button onclick="fecharDetalheMesa()" class="px-3 py-1.5 rounded-md bg-white text-slate-800 text-[12px] font-semibold cursor-pointer">Fechar ✕</button></div>
+            <div id="modal-mesa-conteudo"></div>
+          </div>
         </div>
         <div id="lista-pedidos-admin" class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4 items-start">
           <div class="col-span-full text-center py-12 text-slate-400 text-sm">Carregando os pedidos de hoje...</div>
@@ -3306,6 +3314,11 @@ async function carregarPedidos() {
     var mapa = {};
     (resultados[0].data || []).concat(resultados[1].data || []).forEach(function (p) { mapa[p.id] = p; });
     listaGlobalPedidos = Object.values(mapa).sort(function (a, b) { return b.id - a.id; });
+    try {
+      var rc = await sb.from('mesas_contas').select('id, mesa, status, aberta_em').in('status', ['aberta', 'conta_pedida']);
+      window._contasOk = !rc.error;
+      window._contasAbertas = (!rc.error && rc.data) || [];
+    } catch (e) { window._contasOk = false; window._contasAbertas = []; }
     detectarPedidosNovos();
     renderizarPedidos();
   } catch (err) {
@@ -3340,21 +3353,34 @@ function detectarPedidosNovos() {
 }
 
 window.canalPedidos = (function () { try { return localStorage.getItem('loja_canal_pedidos') || 'todos'; } catch (e) { return 'todos'; } })();
-/* aba "Mesas" piscando até alguém abrir */
-window._novidadeMesa = false;
-function vendoMesas() { return abaAtual === 'pedidos' && window.canalPedidos === 'mesa' && !document.hidden; }
-function marcarNovidadeMesa() {
-  if (vendoMesas()) return;
-  window._novidadeMesa = true;
-  atualizarPiscaMesa();
+/* QUADRO DE MESAS: a mesa fica vermelha (e a aba "Mesas" pisca) até alguém dar OK no pedido */
+window._vistosLocal = {};
+window._contasAbertas = [];
+window._mesaAberta = null;
+function pedidoNaoVisto(p) {
+  return p.tipo_recebimento === 'Mesa' && p.origem !== 'painel' && p.visto_em === null && !window._vistosLocal[p.id] &&
+    p.status !== 'Cancelado' && p.status !== 'Recusado';
 }
+function marcarNovidadeMesa() { atualizarPiscaMesa(); }
 function atualizarPiscaMesa() {
-  if (window._novidadeMesa && vendoMesas()) window._novidadeMesa = false;
+  var tem = listaGlobalPedidos.some(pedidoNaoVisto);
   var aba = document.querySelector('.aba-canal[data-canal="mesa"]'), menu = $('nav-btn-pedidos');
-  if (aba) aba.classList.toggle('pisca', window._novidadeMesa);
-  if (menu) menu.classList.toggle('pisca', window._novidadeMesa);
+  if (aba) aba.classList.toggle('pisca', tem);
+  if (menu) menu.classList.toggle('pisca', tem);
 }
-document.addEventListener('visibilitychange', function () { if (!document.hidden) atualizarPiscaMesa(); });
+async function darOkMesa(chave, ev) {
+  if (ev) ev.stopPropagation();
+  var ids = listaGlobalPedidos.filter(function (p) { return pedidoNaoVisto(p) && chaveMesa(p) === chave; }).map(function (p) { return p.id; });
+  if (!ids.length) return;
+  var agora = new Date().toISOString();
+  ids.forEach(function (id) { window._vistosLocal[id] = true; var p = listaGlobalPedidos.find(function (x) { return x.id === id; }); if (p) p.visto_em = agora; });
+  renderizarPedidos();
+  var r = await initClient().from('pedidos').update({ visto_em: agora }).in('id', ids);
+  if (r.error) console.warn('OK da mesa não foi gravado no banco (rode o instalar.sql novo):', r.error.message);
+}
+function chaveMesa(p) { return p.mesa_conta_id ? 'c' + p.mesa_conta_id : 'm' + p.mesa; }
+function abrirDetalheMesa(chave) { window._mesaAberta = chave; renderizarPedidos(); }
+function fecharDetalheMesa() { window._mesaAberta = null; $('modal-mesa-detalhe').classList.add('hidden'); }
 async function mesaTudoPronto(ids) {
   ids = String(ids).split(',').map(Number).filter(Boolean);
   for (var i = 0; i < ids.length; i++) await executarMudancaStatus(ids[i], 'Saiu para entrega');
@@ -3363,7 +3389,6 @@ async function mesaTudoPronto(ids) {
 
 function filtrarCanal(c) {
   window.canalPedidos = c;
-  if (c === 'mesa') window._novidadeMesa = false;
   try { localStorage.setItem('loja_canal_pedidos', c); } catch (e) {}
   renderizarPedidos();
 }
@@ -3432,14 +3457,15 @@ function renderizarPedidos() {
     var c = b.querySelector('.contagem'), s = b.getAttribute('data-status');
     if (c) c.textContent = doCanal.filter(function (p) { return naEtapa(p, s); }).length;
   });
+  var barraF = $('barra-filtros'); if (barraF) barraF.classList.toggle('hidden', canal === 'mesa');
   var busca = (($('busca-pedidos') || {}).value || '').trim().toLowerCase().replace(/^#/, '');
   var filtrados = doCanal.filter(function (p) {
-    if (!naEtapa(p, statusSelecionado)) return false;
+    if (canal !== 'mesa' && !naEtapa(p, statusSelecionado)) return false;
     if (!busca) return true;
     var texto = [p.id, p.cliente_nome, p.mesa ? 'mesa ' + p.mesa : ''].concat(itensDoPedido(p).map(function (i) { return i.nome; })).join(' ').toLowerCase();
     return texto.indexOf(busca) !== -1;
   });
-  if (!filtrados.length) {
+  if (!filtrados.length && canal !== 'mesa') {
     container.innerHTML = '<div class="col-span-full bg-white border border-[#E2E5EC] rounded-lg p-8 text-center text-slate-500 text-[12.5px]">' + (busca ? 'Nenhum pedido encontrado para "' + esc(busca) + '".' : 'Nenhum pedido aqui hoje.') + '</div>';
     return;
   }
@@ -3497,7 +3523,8 @@ function renderizarPedidos() {
         '<div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">' +
           '<div class="flex items-center gap-1.5 min-w-0"><span class="font-bold text-slate-900 text-[12.5px] tabular-nums">#' + esc(p.id) + '</span>' +
             '<span class="text-[11px] text-slate-400 tabular-nums">' + esc(hora) + '</span>' +
-            (p.origem === 'qrcode' ? '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-200">Pedido pelo QR</span>' : '') + '</div>' +
+            (p.origem === 'qrcode' ? '<span class="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded bg-sky-50 text-sky-700 border border-sky-200">Pedido pelo QR</span>' : '') +
+            (typeof pedidoNaoVisto === 'function' && pedidoNaoVisto(p) ? '<span class="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-[#C8180B] text-white animate-pulse">Novo</span>' : '') + '</div>' +
           '<div class="flex items-center gap-1 flex-shrink-0">' +
             btnIcone('imprimirComanda(' + Number(p.id) + ')', 'Comanda da cozinha', I_COMANDA, 'hover:bg-amber-50 hover:text-[#A8843E]') +
             btnIcone('imprimirPedido(' + Number(p.id) + ')', 'Cupom do cliente', I_CUPOM, 'hover:bg-slate-200/70 hover:text-slate-900') +
@@ -3562,7 +3589,67 @@ function renderizarPedidos() {
       grupos[k].push(p);
     } else ordem.push({ p: p });
   });
-  container.innerHTML = ordem.map(function (o) { return o.p ? cartaoPedido(o.p) : cartaoMesa(grupos[o.g]); }).join('');
+  if (canal !== 'mesa') {
+    container.classList.remove('quadro-mesas');
+    container.innerHTML = ordem.map(function (o) { return o.p ? cartaoPedido(o.p) : cartaoMesa(grupos[o.g]); }).join('');
+    return;
+  }
+
+  // ---------- QUADRO DE MESAS (um quadrado por mesa em atendimento)
+  var mesas = {};
+  (window._contasAbertas || []).forEach(function (c) { mesas['c' + c.id] = { chave: 'c' + c.id, mesa: c.mesa, conta: c, pedidos: [] }; });
+  var FINAIS = ['Concluído', 'Cancelado', 'Recusado'];
+  doCanal.forEach(function (p) {
+    var k = chaveMesa(p);
+    if (!mesas[k]) {
+      // conta já fechada (ou pedido de mesa lançado no balcão que já terminou): não entra no quadro
+      if (p.mesa_conta_id && window._contasOk) return;
+      if (FINAIS.indexOf(p.status) !== -1) return;
+      mesas[k] = { chave: k, mesa: p.mesa, conta: null, pedidos: [] };
+    }
+    mesas[k].pedidos.push(p);
+  });
+  var lista = Object.values(mesas).filter(function (m) {
+    if (!busca) return true;
+    return ('mesa ' + m.mesa + ' ' + m.pedidos.map(function (p) { return p.id + ' ' + itensDoPedido(p).map(function (i) { return i.nome; }).join(' '); }).join(' ')).toLowerCase().indexOf(busca) !== -1;
+  }).sort(function (a, b) { return (parseInt(a.mesa, 10) || 0) - (parseInt(b.mesa, 10) || 0); });
+  container.classList.add('quadro-mesas');
+  if (!lista.length) {
+    container.innerHTML = '<div class="col-span-full bg-white border border-[#E2E5EC] rounded-lg p-8 text-center text-slate-500 text-[12.5px]">Nenhuma mesa em atendimento agora.</div>';
+  } else {
+    container.innerHTML = lista.map(function (m) {
+      var novos = m.pedidos.filter(pedidoNaoVisto);
+      var aceitar = m.pedidos.some(function (p) { return STATUS_AGUARDANDO.indexOf(p.status) !== -1; });
+      var vermelho = novos.length > 0;
+      var ativos = m.pedidos.filter(function (p) { return p.status !== 'Cancelado' && p.status !== 'Recusado'; });
+      var total = ativos.reduce(function (s, p) { return s + Number(p.total || 0); }, 0);
+      var prontos = ativos.filter(function (p) { return p.status === 'Saiu para entrega'; }).length;
+      var situacao = vermelho ? (aceitar ? 'Aceitar pedido' : (novos.length > 1 ? novos.length + ' pedidos' : 'Pedido')) :
+        aceitar ? 'Aceitar pedido' : (m.conta && m.conta.status === 'conta_pedida') ? 'Pediu a conta' : prontos ? 'Pronto p/ servir' : 'Aberta';
+      var q = "'" + m.chave + "'";
+      return '<div onclick="abrirDetalheMesa(' + q + ')" class="tile-mesa relative rounded-xl p-4 pt-5 flex flex-col items-center justify-center text-center gap-2 cursor-pointer select-none transition-colors ' +
+          (vermelho ? 'bg-[#C8180B] text-white shadow-lg' : 'bg-white border border-[#E2E5EC] hover:border-slate-300 text-slate-900') + '">' +
+        '<button onclick="event.stopPropagation(); abrirDetalheMesa(' + q + ')" title="Ver pedidos da mesa" class="absolute top-2.5 right-2.5 w-7 h-7 rounded-full flex items-center justify-center ' + (vermelho ? 'bg-white/20 text-white' : 'bg-[#111317] text-white') + '"><svg class="ico w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>' +
+        '<p class="text-[15px] font-extrabold tracking-wide ' + (vermelho ? 'text-white' : 'text-slate-900') + '">MESA</p>' +
+        '<span class="min-w-[52px] h-[52px] px-2 rounded-lg bg-[#111317] text-white flex items-center justify-center text-[24px] font-extrabold tabular-nums ' + (vermelho ? 'ring-2 ring-white/40' : '') + '">' + esc(m.mesa) + '</span>' +
+        '<p class="text-[13px] font-extrabold uppercase tracking-wide ' + (vermelho ? 'text-white' : (situacao === 'Aberta' ? 'text-slate-900' : 'text-[#A8843E]')) + '">' + esc(situacao) + '</p>' +
+        '<p class="text-[11px] tabular-nums ' + (vermelho ? 'text-white/80' : 'text-slate-500') + '">' + (ativos.length ? ativos.length + (ativos.length > 1 ? ' rodadas · ' : ' rodada · ') + brl(total) : 'sem pedidos ainda') + '</p>' +
+        (vermelho ? '<button onclick="darOkMesa(' + q + ', event)" class="mt-1 w-full py-2 rounded-md bg-white hover:bg-slate-100 text-[#C8180B] text-[13px] font-extrabold cursor-pointer">OK</button>' : '') +
+      '</div>';
+    }).join('');
+  }
+  // janela com os pedidos da mesa
+  var modal = $('modal-mesa-detalhe');
+  if (modal) {
+    var aberta = window._mesaAberta && mesas[window._mesaAberta];
+    if (!aberta) { modal.classList.add('hidden'); window._mesaAberta = null; }
+    else {
+      var naoVistosAqui = aberta.pedidos.filter(pedidoNaoVisto).length;
+      $('modal-mesa-conteudo').innerHTML = (aberta.pedidos.length ? cartaoMesa(aberta.pedidos) : '<div class="bg-white rounded-lg p-6 text-center text-slate-500 text-[12.5px]">Mesa ' + esc(aberta.mesa) + ': conta aberta, ainda sem pedidos.</div>') +
+        (naoVistosAqui ? '<button onclick="darOkMesa(\'' + aberta.chave + '\')" class="mt-3 w-full py-2.5 rounded-md bg-[#C8180B] hover:bg-red-800 text-white text-[13px] font-extrabold cursor-pointer">OK, pedido visto</button>' : '');
+      modal.classList.remove('hidden');
+    }
+  }
 }
 
 async function executarMudancaStatus(id, status) {
