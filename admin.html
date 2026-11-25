@@ -168,6 +168,11 @@
     .btn-filtro:hover { background: #E8EBF0; }
     .btn-filtro .contagem { padding: 0 6px; border-radius: 4px; font-size: 10.5px; font-variant-numeric: tabular-nums; background: #fff; color: #475569; border: 1px solid var(--borda); }
     .btn-filtro.sel { background: var(--grafite); color: #fff; }
+    .aba-canal { display: inline-flex; align-items: center; gap: 8px; padding: 10px 14px; margin-bottom: -1px; font-size: 13px; font-weight: 600; color: #64748B; border-bottom: 2px solid transparent; white-space: nowrap; cursor: pointer; }
+    .aba-canal:hover { color: #0F172A; }
+    .aba-canal .contagem { padding: 0 7px; border-radius: 999px; font-size: 11px; font-variant-numeric: tabular-nums; background: #E8EBF0; color: #475569; }
+    .aba-canal.sel { color: #0F172A; border-bottom-color: var(--grafite); }
+    .aba-canal.sel .contagem { background: var(--grafite); color: #fff; }
     .btn-filtro.sel .contagem { background: rgba(197, 160, 89, .25); color: var(--champ); border-color: transparent; }
   </style>
   <link rel="manifest" href="manifest-admin.json">
@@ -443,10 +448,16 @@
               <option value="comanda">Comanda da cozinha</option><option value="cupom">Cupom do cliente</option><option value="ambos">Os dois</option><option value="nada">Nada</option>
             </select></label>
         </div>
+        <div id="abas-canal" class="flex items-end gap-1 border-b border-[#E2E5EC] overflow-x-auto">
+          <button onclick="filtrarCanal('todos')" data-canal="todos" class="aba-canal sel">Todos <span class="contagem">0</span></button>
+          <button onclick="filtrarCanal('entrega')" data-canal="entrega" class="aba-canal">Entregas <span class="contagem">0</span></button>
+          <button onclick="filtrarCanal('retirada')" data-canal="retirada" class="aba-canal">Retirada e balcão <span class="contagem">0</span></button>
+          <button onclick="filtrarCanal('mesa')" data-canal="mesa" class="aba-canal">Mesas <span class="contagem">0</span></button>
+        </div>
         <div id="barra-filtros" class="flex flex-wrap items-center gap-1.5 bg-white p-2 rounded-lg border border-[#E2E5EC]">
           <button onclick="filtrarStatus('Todos')" class="btn-filtro sel" data-status="Todos"><span>Todos (hoje)</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Aguardando Aceite da Loja')" class="btn-filtro" data-status="Aguardando Aceite da Loja"><span>Novos (aguardando aceite)</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Aguardando Pagamento Pix')" class="btn-filtro" data-status="Aguardando Pagamento Pix"><span>Aguardando Pix</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Em preparo')" class="btn-filtro" data-status="Em preparo"><span>Em preparação</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Saiu para entrega')" class="btn-filtro" data-status="Saiu para entrega"><span>Prontos / a caminho</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Concluído')" class="btn-filtro" data-status="Concluído"><span>Concluídos</span><span class="contagem">0</span></button><button onclick="filtrarStatus('Recusado')" class="btn-filtro" data-status="Recusado"><span>Recusados</span><span class="contagem">0</span></button>
         </div>
-        <div id="lista-pedidos-admin" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div id="lista-pedidos-admin" class="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
           <div class="col-span-full text-center py-12 text-slate-400 text-sm">Carregando os pedidos de hoje...</div>
         </div>
       </section>
@@ -3315,6 +3326,13 @@ function detectarPedidosNovos() {
   });
 }
 
+window.canalPedidos = (function () { try { return localStorage.getItem('loja_canal_pedidos') || 'todos'; } catch (e) { return 'todos'; } })();
+function filtrarCanal(c) {
+  window.canalPedidos = c;
+  try { localStorage.setItem('loja_canal_pedidos', c); } catch (e) {}
+  renderizarPedidos();
+}
+
 function filtrarStatus(s) {
   statusSelecionado = s;
   document.querySelectorAll('.btn-filtro').forEach(function (b) { b.classList.toggle('sel', b.getAttribute('data-status') === s); });
@@ -3356,6 +3374,19 @@ function renderizarPedidos() {
   if (pendentes > 0) iniciarAlarmeSonoro(); else pararAlarmeSonoro();
   try { if (navigator.setAppBadge) { pendentes ? navigator.setAppBadge(pendentes) : navigator.clearAppBadge(); } } catch (e) {}
 
+  var noCanal = function (p, c) {
+    if (c === 'mesa') return p.tipo_recebimento === 'Mesa';
+    if (c === 'retirada') return p.tipo_recebimento !== 'Mesa' && pedidoEhRetirada(p);
+    if (c === 'entrega') return !pedidoEhRetirada(p);
+    return true;
+  };
+  var canal = window.canalPedidos || 'todos';
+  document.querySelectorAll('.aba-canal').forEach(function (b) {
+    var c = b.querySelector('.contagem'), k = b.getAttribute('data-canal');
+    b.classList.toggle('sel', k === canal);
+    if (c) c.textContent = listaGlobalPedidos.filter(function (p) { return noCanal(p, k); }).length;
+  });
+  var doCanal = listaGlobalPedidos.filter(function (p) { return noCanal(p, canal); });
   var naEtapa = function (p, s) {
     if (s === 'Todos') return true;
     if (s === 'Aguardando Aceite da Loja') return STATUS_AGUARDANDO.indexOf(p.status) !== -1;
@@ -3364,17 +3395,17 @@ function renderizarPedidos() {
   // contagem em cada filtro
   document.querySelectorAll('.btn-filtro').forEach(function (b) {
     var c = b.querySelector('.contagem'), s = b.getAttribute('data-status');
-    if (c) c.textContent = listaGlobalPedidos.filter(function (p) { return naEtapa(p, s); }).length;
+    if (c) c.textContent = doCanal.filter(function (p) { return naEtapa(p, s); }).length;
   });
   var busca = (($('busca-pedidos') || {}).value || '').trim().toLowerCase().replace(/^#/, '');
-  var filtrados = listaGlobalPedidos.filter(function (p) {
+  var filtrados = doCanal.filter(function (p) {
     if (!naEtapa(p, statusSelecionado)) return false;
     if (!busca) return true;
     var texto = [p.id, p.cliente_nome, p.mesa ? 'mesa ' + p.mesa : ''].concat(itensDoPedido(p).map(function (i) { return i.nome; })).join(' ').toLowerCase();
     return texto.indexOf(busca) !== -1;
   });
   if (!filtrados.length) {
-    container.innerHTML = '<div class="col-span-full bg-white border border-[#E2E5EC] rounded-lg p-8 text-center text-slate-500 text-[12.5px]">' + (busca ? 'Nenhum pedido encontrado para "' + esc(busca) + '".' : 'Nenhum pedido nesta categoria hoje.') + '</div>';
+    container.innerHTML = '<div class="col-span-full bg-white border border-[#E2E5EC] rounded-lg p-8 text-center text-slate-500 text-[12.5px]">' + (busca ? 'Nenhum pedido encontrado para "' + esc(busca) + '".' : 'Nenhum pedido aqui hoje.') + '</div>';
     return;
   }
 
@@ -3427,15 +3458,15 @@ function renderizarPedidos() {
 
     return '<div class="bg-white rounded-lg p-4 border flex flex-col justify-between gap-3.5 transition-colors ' + (aguardando ? 'border-amber-300 ring-2 ring-amber-200/70' : 'border-[#E2E5EC] hover:border-slate-300') + '">' +
       '<div class="space-y-2.5">' +
-        '<div class="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100">' +
-          '<div class="flex items-center gap-1.5 flex-wrap"><span class="font-bold text-slate-900 text-[13px] tabular-nums">#' + esc(p.id) + '</span>' +
+        '<div class="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2 pb-2.5 border-b border-slate-100">' +
+          '<div class="flex items-center gap-1.5 min-w-0"><span class="font-bold text-slate-900 text-[13px] tabular-nums">#' + esc(p.id) + '</span>' +
             '<span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#F4F5F7] border border-[#E2E5EC] text-slate-700">' + esc(tipoTxt) + '</span>' +
             '<span class="text-[11px] text-slate-400 tabular-nums">' + esc(hora) + '</span></div>' +
-          '<div class="flex items-center gap-1">' +
+          '<div class="flex items-center gap-1 flex-shrink-0">' +
             btnIcone('imprimirComanda(' + Number(p.id) + ')', 'Comanda da cozinha', I_COMANDA, 'hover:bg-amber-50 hover:text-[#A8843E]') +
             btnIcone('imprimirPedido(' + Number(p.id) + ')', 'Cupom do cliente', I_CUPOM, 'hover:bg-slate-200/70 hover:text-slate-900') +
             btnIcone('excluirPedido(' + Number(p.id) + ')', 'Excluir pedido', I_LIXO, 'hover:bg-red-50 hover:text-[#B91C1C]', dis) +
-            '<span class="ml-1 text-[10.5px] font-bold px-2 py-0.5 rounded border ' + classeBadgeStatus(p.status) + '">' + esc(p.status || '-') + '</span>' +
+            '<span class="ml-1 text-[10.5px] font-bold px-2 py-0.5 rounded border whitespace-nowrap ' + classeBadgeStatus(p.status) + '">' + esc(p.status || '-') + '</span>' +
           '</div>' +
         '</div>' +
         '<div><p class="text-[14px] font-bold text-slate-900 break-words">' + esc(p.cliente_nome || 'Cliente') + '</p>' + contato +
